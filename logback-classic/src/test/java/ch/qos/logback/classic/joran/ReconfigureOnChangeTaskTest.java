@@ -19,7 +19,6 @@ import static ch.qos.logback.classic.joran.ReconfigureOnChangeTask.FALLING_BACK_
 import static ch.qos.logback.classic.joran.ReconfigureOnChangeTask.RE_REGISTERING_PREVIOUS_SAFE_CONFIGURATION;
 import static ch.qos.logback.core.CoreConstants.RECONFIGURE_ON_CHANGE_TASK;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +39,7 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.gaffer.GafferConfigurator;
 import ch.qos.logback.classic.issue.lbclassic135.LoggingRunnable;
 import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.contention.AbstractMultiThreadedHarness;
@@ -49,10 +49,10 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
 import ch.qos.logback.core.status.InfoStatus;
 import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.testUtil.CoreTestConstants;
+import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.testUtil.FileTestUtil;
 import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.testUtil.StatusChecker;
+import ch.qos.logback.core.util.CoreTestConstants;
 import ch.qos.logback.core.util.StatusPrinter;
 
 public class ReconfigureOnChangeTaskTest {
@@ -76,8 +76,6 @@ public class ReconfigureOnChangeTaskTest {
 
     final static String INCLUSION_SCAN_INNER1_AS_STR = "target/test-classes/asResource/inner1.xml";
 
-    private static final String SCAN_PERIOD_DEFAULT_FILE_AS_STR =  JORAN_INPUT_PREFIX + "roct/scan_period_default.xml";
-    
     LoggerContext loggerContext = new LoggerContext();
     Logger logger = loggerContext.getLogger(this.getClass());
     StatusChecker statusChecker = new StatusChecker(loggerContext);
@@ -99,10 +97,10 @@ public class ReconfigureOnChangeTaskTest {
         jc.doConfigure(is);
     }
 
-//    void gConfigure(File file) throws JoranException {
-//        GafferConfigurator gc = new GafferConfigurator(loggerContext);
-//        gc.run(file);
-//    }
+    void gConfigure(File file) throws JoranException {
+        GafferConfigurator gc = new GafferConfigurator(loggerContext);
+        gc.run(file);
+    }
 
     @Test(timeout = 4000L)
     public void checkBasicLifecyle() throws JoranException, IOException, InterruptedException {
@@ -114,15 +112,15 @@ public class ReconfigureOnChangeTaskTest {
         checkThatTaskCanBeStopped();
     }
 
-//    @Test(timeout = 4000L)
-//    public void checkBasicLifecyleWithGaffer() throws JoranException, IOException, InterruptedException {
-//        File file = new File(G_SCAN1_FILE_AS_STR);
-//        gConfigure(file);
-//        List<File> fileList = getConfigurationWatchList(loggerContext);
-//        assertThatListContainsFile(fileList, file);
-//        checkThatTaskHasRan();
-//        checkThatTaskCanBeStopped();
-//    }
+    @Test(timeout = 4000L)
+    public void checkBasicLifecyleWithGaffer() throws JoranException, IOException, InterruptedException {
+        File file = new File(G_SCAN1_FILE_AS_STR);
+        gConfigure(file);
+        List<File> fileList = getConfigurationWatchList(loggerContext);
+        assertThatListContainsFile(fileList, file);
+        checkThatTaskHasRan();
+        checkThatTaskCanBeStopped();
+    }
 
     private void checkThatTaskCanBeStopped() {
         ScheduledFuture<?> future = loggerContext.getScheduledFutures().get(0);
@@ -310,18 +308,6 @@ public class ReconfigureOnChangeTaskTest {
             rArray[i] = new LoggingRunnable(logger);
         }
         return rArray;
-    }
-
-    @Test
-    public void checkReconfigureTaskScheduledWhenDefaultScanPeriodUsed() throws JoranException {
-        File file = new File(SCAN_PERIOD_DEFAULT_FILE_AS_STR);
-        configure(file);
-
-        final List<ScheduledFuture<?>> scheduledFutures = loggerContext.getScheduledFutures();
-        StatusPrinter.print(loggerContext);
-        assertFalse(scheduledFutures.isEmpty());
-        statusChecker.containsMatch("No 'scanPeriod' specified. Defaulting to");
-   
     }
 
     // check for deadlocks

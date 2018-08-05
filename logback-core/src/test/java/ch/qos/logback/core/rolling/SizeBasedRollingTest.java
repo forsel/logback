@@ -20,10 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.core.encoder.EchoEncoder;
-import ch.qos.logback.core.rolling.testUtil.ScaffoldingForRollingTests;
-import ch.qos.logback.core.testUtil.CoreTestConstants;
+import ch.qos.logback.core.util.CoreTestConstants;
 import ch.qos.logback.core.util.FileSize;
-import ch.qos.logback.core.util.StatusPrinter;
 
 public class SizeBasedRollingTest extends ScaffoldingForRollingTests {
 
@@ -85,7 +83,6 @@ public class SizeBasedRollingTest extends ScaffoldingForRollingTests {
         }
         rfa.stop();
 
-        StatusPrinter.print(context);
         existenceCheck(expectedFilenameList);
         reverseSortedContentCheck(randomOutputDir, runLength, prefix);
     }

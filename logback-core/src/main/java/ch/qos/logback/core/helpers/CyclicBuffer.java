@@ -47,7 +47,6 @@ public class CyclicBuffer<E> {
         init(maxSize);
     }
 
-    @SuppressWarnings("unchecked")
     public CyclicBuffer(CyclicBuffer<E> other) {
         this.maxSize = other.maxSize;
         ea = (E[]) new Object[maxSize];

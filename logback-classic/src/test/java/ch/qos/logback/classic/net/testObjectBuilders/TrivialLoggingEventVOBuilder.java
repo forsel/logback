@@ -19,9 +19,9 @@ import ch.qos.logback.classic.spi.LoggingEventVO;
 /**
  * @author Pierre Queinnec
  */
-public class TrivialLoggingEventVOBuilder implements Builder<LoggingEventVO> {
+public class TrivialLoggingEventVOBuilder implements Builder {
 
-    public LoggingEventVO build(int i) {
+    public Object build(int i) {
         TrivialLoggingEventBuilder loggingEventBuilder = new TrivialLoggingEventBuilder();
         LoggingEvent event = (LoggingEvent) loggingEventBuilder.build(i);
 

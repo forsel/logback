@@ -28,7 +28,6 @@ import javax.net.SocketFactory;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.net.server.HardenedLoggingEventInputStream;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.net.DefaultSocketConnector;
 import ch.qos.logback.core.net.AbstractSocketAppender;
@@ -154,10 +153,9 @@ public class SocketReceiver extends ReceiverBase implements Runnable, SocketConn
     }
 
     private void dispatchEvents(LoggerContext lc) {
-        ObjectInputStream ois = null;
         try {
             socket.setSoTimeout(acceptConnectionTimeout);
-            ois = new HardenedLoggingEventInputStream(socket.getInputStream());
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             socket.setSoTimeout(0);
             addInfo(receiverId + "connection established");
             while (true) {
@@ -174,7 +172,6 @@ public class SocketReceiver extends ReceiverBase implements Runnable, SocketConn
         } catch (ClassNotFoundException ex) {
             addInfo(receiverId + "unknown event class: " + ex);
         } finally {
-            CloseUtil.closeQuietly(ois);
             CloseUtil.closeQuietly(socket);
             socket = null;
             addInfo(receiverId + "connection closed");

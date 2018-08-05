@@ -138,7 +138,6 @@ public class AccessEventDiscriminator extends AbstractDiscriminator<IAccessEvent
                 addError("\"OptionalKey\" property is mandatory for field name " + fieldName.toString());
                 errorCount++;
             }
-        default:    
         }
 
         if (errorCount == 0) {

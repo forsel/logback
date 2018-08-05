@@ -16,14 +16,13 @@ package ch.qos.logback.core.joran.action;
 import org.xml.sax.Attributes;
 
 import ch.qos.logback.core.CoreConstants;
-import ch.qos.logback.core.hook.DefaultShutdownHook;
 import ch.qos.logback.core.hook.ShutdownHookBase;
 import ch.qos.logback.core.joran.spi.ActionException;
 import ch.qos.logback.core.joran.spi.InterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 
 /**
- * Action which handles &lt;shutdownHook&gt; elements in configuration files.
+ * Action which handles <shutdownHook> elements in configuration files.
  * 
  * @author Mike Reinhold
  */
@@ -45,8 +44,9 @@ public class ShutdownHookAction extends Action {
 
         String className = attributes.getValue(CLASS_ATTRIBUTE);
         if (OptionHelper.isEmpty(className)) {
-            className = DefaultShutdownHook.class.getName();
-            addInfo("Assuming className [" + className + "]");
+            addError("Missing class name for shutdown hook. Near [" + name + "] line " + getLineNumber(ic));
+            inError = true;
+            return;
         }
 
         try {
@@ -80,7 +80,7 @@ public class ShutdownHookAction extends Action {
             ic.popObject();
 
             Thread hookThread = new Thread(hook, "Logback shutdown hook [" + context.getName() + "]");
-            addInfo("Registeting shuthown hook with JVM runtime.");
+
             context.putObject(CoreConstants.SHUTDOWN_HOOK_THREAD, hookThread);
             Runtime.getRuntime().addShutdownHook(hookThread);
         }

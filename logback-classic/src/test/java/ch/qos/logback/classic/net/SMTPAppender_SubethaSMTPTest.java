@@ -28,13 +28,15 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.dom4j.io.SAXReader;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
+import org.junit.*;
+import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.LoginAuthenticationHandler;
 import org.subethamail.smtp.auth.LoginFailedException;
+import org.subethamail.smtp.auth.PlainAuthenticationHandler;
+import org.subethamail.smtp.auth.PluginAuthenticationHandler;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
+import org.subethamail.smtp.server.MessageListenerAdapter;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
@@ -61,23 +63,20 @@ public class SMTPAppender_SubethaSMTPTest {
 
     int numberOfOldMessages;
 
-//    @BeforeClass
-//    static public void beforeClass() {
-//        WISER = new Wiser();
-//        WISER.setPort(DIFF);
-//        WISER.start();
-//    }
-
-//    @AfterClass
-//    static public void afterClass() throws Exception {
-//        WISER.stop();
-//    }
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    static public void beforeClass() {
         WISER = new Wiser();
         WISER.setPort(DIFF);
         WISER.start();
+    }
+
+    @AfterClass
+    static public void afterClass() throws Exception {
+        WISER.stop();
+    }
+
+    @Before
+    public void setUp() throws Exception {
         numberOfOldMessages = WISER.getMessages().size();
         buildSMTPAppender();
     }
@@ -85,8 +84,8 @@ public class SMTPAppender_SubethaSMTPTest {
     @After
     public void tearDown() {
         // clear any authentication handler factory
-        //WISER.getServer().setAuthenticationHandlerFactory(null);
-        WISER.stop();
+        MessageListenerAdapter mla = (MessageListenerAdapter) WISER.getServer().getMessageHandlerFactory();
+        mla.setAuthenticationHandlerFactory(null);
     }
 
     void buildSMTPAppender() throws Exception {
@@ -140,8 +139,8 @@ public class SMTPAppender_SubethaSMTPTest {
         String all = getWholeMessage(msg);
         int i = all.indexOf("\r\n\r\n");
         return all.substring(i + 4, all.length());
-    } 
- 
+    }
+
     @Test
     public void smoke() throws Exception {
         smtpAppender.setLayout(buildPatternLayout(loggerContext));
@@ -233,28 +232,13 @@ public class SMTPAppender_SubethaSMTPTest {
         reader.read(mp.getBodyPart(0).getInputStream());
     }
 
-    static String REQUIRED_USERNAME = "user";
-    static String REQUIRED_PASSWORD = "password";
-    
-    class RequiredUsernamePasswordValidator implements UsernamePasswordValidator {
-        public void login(String username, String password) throws LoginFailedException {
-            if (!username.equals(REQUIRED_USERNAME) || !password.equals(REQUIRED_PASSWORD)) {
-                throw new LoginFailedException();
-            }
-        }
-    }
-
-    
-    
-    
     @Test
     public void authenticated() throws Exception {
-        setAuthenticanHandlerFactory();
-        // MessageListenerAdapter mla = (MessageListenerAdapter) WISER.getServer().getMessageHandlerFactory();
-        // mla.setAuthenticationHandlerFactory(new TrivialAuthHandlerFactory());
+        MessageListenerAdapter mla = (MessageListenerAdapter) WISER.getServer().getMessageHandlerFactory();
+        mla.setAuthenticationHandlerFactory(new TrivialAuthHandlerFactory());
 
-        smtpAppender.setUsername(REQUIRED_USERNAME);
-        smtpAppender.setPassword(REQUIRED_PASSWORD);
+        smtpAppender.setUsername("x");
+        smtpAppender.setPassword("x");
 
         smtpAppender.setLayout(buildPatternLayout(loggerContext));
         smtpAppender.start();
@@ -278,23 +262,17 @@ public class SMTPAppender_SubethaSMTPTest {
         assertTrue(body.endsWith(FOOTER.trim()));
     }
 
-    private void setAuthenticanHandlerFactory() {
-        UsernamePasswordValidator validator = new RequiredUsernamePasswordValidator();
-        EasyAuthenticationHandlerFactory authenticationHandlerFactory = new EasyAuthenticationHandlerFactory(validator);
-        WISER.getServer().setAuthenticationHandlerFactory(authenticationHandlerFactory);
-    }
-
-    
+    @Test
+    @Ignore
     // Unfortunately, there seems to be a problem with SubethaSMTP's implementation
     // of startTLS. The same SMTPAppender code works fine when tested with gmail.
-    @Test
     public void authenticatedSSL() throws Exception {
-        
-        setAuthenticanHandlerFactory();
+        MessageListenerAdapter mla = (MessageListenerAdapter) WISER.getServer().getMessageHandlerFactory();
+        mla.setAuthenticationHandlerFactory(new TrivialAuthHandlerFactory());
 
         smtpAppender.setSTARTTLS(true);
-        smtpAppender.setUsername(REQUIRED_USERNAME);
-        smtpAppender.setPassword(REQUIRED_PASSWORD);
+        smtpAppender.setUsername("xx");
+        smtpAppender.setPassword("xx");
 
         smtpAppender.setLayout(buildPatternLayout(loggerContext));
         smtpAppender.start();
@@ -310,54 +288,46 @@ public class SMTPAppender_SubethaSMTPTest {
         assertEquals(1, wiserMsgList.size());
     }
 
-    
-    static String GMAIL_USER_NAME = "xx@gmail.com";
-    static String GMAIL_PASSWORD = "xxx";
-    
-    @Ignore
     @Test
+    @Ignore
     public void authenticatedGmailStartTLS() throws Exception {
         smtpAppender.setSMTPHost("smtp.gmail.com");
         smtpAppender.setSMTPPort(587);
-        smtpAppender.setAsynchronousSending(false);
-        smtpAppender.addTo(GMAIL_USER_NAME);
-        
+
+        smtpAppender.addTo("XXX@gmail.com");
         smtpAppender.setSTARTTLS(true);
-        smtpAppender.setUsername(GMAIL_USER_NAME);
-        smtpAppender.setPassword(GMAIL_PASSWORD);
+        smtpAppender.setUsername("XXX@gmail.com");
+        smtpAppender.setPassword("XXX");
 
         smtpAppender.setLayout(buildPatternLayout(loggerContext));
-        smtpAppender.setSubject("authenticatedGmailStartTLS - %level %logger{20} - %m");
         smtpAppender.start();
         Logger logger = loggerContext.getLogger("authenticatedGmailSTARTTLS");
         logger.addAppender(smtpAppender);
-        logger.debug("authenticatedGmailStartTLS =- hello");
+        logger.debug("hello");
         logger.error("en error", new Exception("an exception"));
 
         StatusPrinter.print(loggerContext);
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void authenticatedGmail_SSL() throws Exception {
         smtpAppender.setSMTPHost("smtp.gmail.com");
         smtpAppender.setSMTPPort(465);
-        smtpAppender.setSubject("authenticatedGmail_SSL - %level %logger{20} - %m");
-        smtpAppender.addTo(GMAIL_USER_NAME);
+
+        smtpAppender.addTo("XXX@gmail.com");
         smtpAppender.setSSL(true);
-        smtpAppender.setUsername(GMAIL_USER_NAME);
-        smtpAppender.setPassword(GMAIL_PASSWORD);
-        smtpAppender.setAsynchronousSending(false);
+        smtpAppender.setUsername("XXX@gmail.com");
+        smtpAppender.setPassword("XXX");
+
         smtpAppender.setLayout(buildPatternLayout(loggerContext));
         smtpAppender.start();
         Logger logger = loggerContext.getLogger("authenticatedGmail_SSL");
         logger.addAppender(smtpAppender);
-        logger.debug("hello"+new java.util.Date());
+        logger.debug("hello");
         logger.error("en error", new Exception("an exception"));
 
         StatusPrinter.print(loggerContext);
-        
-        
     }
 
     @Test
@@ -376,20 +346,20 @@ public class SMTPAppender_SubethaSMTPTest {
         assertEquals(numberOfOldMessages + 3, wiserMsgList.size());
     }
 
-//    public class TrivialAuthHandlerFactory implements AuthenticationHandlerFactory {
-//        public AuthenticationHandler create() {
-//            PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
-//            UsernamePasswordValidator validator = new UsernamePasswordValidator() {
-//                public void login(String username, String password) throws LoginFailedException {
-//                    if (!username.equals(password)) {
-//                        throw new LoginFailedException("username=" + username + ", password=" + password);
-//                    }
-//                }
-//            };
-//            ret.addPlugin(new PlainAuthenticationHandler(validator));
-//            ret.addPlugin(new LoginAuthenticationHandler(validator));
-//            return ret;
-//        }
-//    }
+    public class TrivialAuthHandlerFactory implements AuthenticationHandlerFactory {
+        public AuthenticationHandler create() {
+            PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
+            UsernamePasswordValidator validator = new UsernamePasswordValidator() {
+                public void login(String username, String password) throws LoginFailedException {
+                    if (!username.equals(password)) {
+                        throw new LoginFailedException("username=" + username + ", password=" + password);
+                    }
+                }
+            };
+            ret.addPlugin(new PlainAuthenticationHandler(validator));
+            ret.addPlugin(new LoginAuthenticationHandler(validator));
+            return ret;
+        }
+    }
 
 }

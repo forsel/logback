@@ -209,7 +209,7 @@ public abstract class SyslogAppenderBase<E> extends AppenderBase<E> {
      * LOCAL7. Case is not important.
      * 
      * <p>
-     * See {@link ch.qos.logback.core.net.SyslogConstants SyslogConstants} and RFC 3164 for more information about the
+     * See {@link SyslogConstants} and RFC 3164 for more information about the
      * <b>Facility</b> option.
      */
     public void setFacility(String facilityStr) {
@@ -235,6 +235,10 @@ public abstract class SyslogAppenderBase<E> extends AppenderBase<E> {
         this.port = port;
     }
 
+    /**
+     * 
+     * @return
+     */
     public int getMaxMessageSize() {
         return maxMessageSize;
     }
@@ -267,7 +271,7 @@ public abstract class SyslogAppenderBase<E> extends AppenderBase<E> {
     }
 
     /**
-       * See {@link #setSuffixPattern #setSuffixPattern(String)}.
+       * See {@link #setSuffixPattern(String).
        * 
        * @return
        */

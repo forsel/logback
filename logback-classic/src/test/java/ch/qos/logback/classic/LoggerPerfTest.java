@@ -15,15 +15,17 @@ package ch.qos.logback.classic;
 
 import static org.junit.Assert.assertTrue;
 
+import ch.qos.logback.core.testUtil.EnvUtilForTests;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.helpers.BogoPerf;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.turbo.NOPTurboFilter;
+import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import ch.qos.logback.core.helpers.NOPAppender;
-import ch.qos.logback.core.testUtil.EnvUtilForTests;
 
 @Ignore
 public class LoggerPerfTest {
@@ -45,10 +47,9 @@ public class LoggerPerfTest {
     public void durationOfDisabledLogsWith_1_NOPFilter() {
         double avg = computeDurationOfDisabledLogsWith_1_NOPFilter(1, NORMAL_RUN_LENGTH);
         System.out.println("durationOfDisabledLogsWith_1_NOPFilter=" + avg);
-        @SuppressWarnings("unused")
         long referencePerf = 60;
 
-        //BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
+        BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
     }
 
     double computeDurationOfDisabledLogsWith_1_NOPFilter(int numOfFilters, long len) {
@@ -72,9 +73,8 @@ public class LoggerPerfTest {
         double avg = computedurationOfIsDebugEnabled(10 * NORMAL_RUN_LENGTH);
         System.out.println("durationOfIsDebugEnabled=" + avg);
 
-        @SuppressWarnings("unused")
         long referencePerf = 15;
-        //BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
+        BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
     }
 
     double computedurationOfIsDebugEnabled(final long len) {
@@ -97,9 +97,8 @@ public class LoggerPerfTest {
         double avg = computeDurationOfDisabledLog_NoParameters(10 * NORMAL_RUN_LENGTH);
         System.out.println("durationOfDisabledLog_NoParameters=" + avg);
 
-        @SuppressWarnings("unused")
         long referencePerf = 18;
-        //BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
+        BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
     }
 
     double computeDurationOfDisabledLog_NoParameters(final long len) {
@@ -124,9 +123,8 @@ public class LoggerPerfTest {
         double avgDuration = computeDurationOfDisabledLog_1_Parameter(NORMAL_RUN_LENGTH);
         System.out.println("durationOfDisabledLog_1_Parameter=" + avgDuration);
 
-        @SuppressWarnings("unused")
         long referencePerf = 30;
-        //BogoPerf.assertDuration(avgDuration, referencePerf, CoreConstants.REFERENCE_BIPS);
+        BogoPerf.assertDuration(avgDuration, referencePerf, CoreConstants.REFERENCE_BIPS);
     }
 
     double computeDurationOfDisabledLog_1_Parameter(long len) {
@@ -154,9 +152,8 @@ public class LoggerPerfTest {
         double avgDuration = computeDurationOfEnabledLog(SHORTENED_RUN_LENGTH);
         System.out.println("durationOfEnabledLog=" + avgDuration);
 
-        @SuppressWarnings("unused")
         long referencePerf = 800;
-       // BogoPerf.assertDuration(avgDuration, referencePerf, CoreConstants.REFERENCE_BIPS);
+        BogoPerf.assertDuration(avgDuration, referencePerf, CoreConstants.REFERENCE_BIPS);
     }
 
     double computeDurationOfEnabledLog(long len) {

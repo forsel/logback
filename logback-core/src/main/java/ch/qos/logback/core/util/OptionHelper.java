@@ -58,7 +58,7 @@ public class OptionHelper {
                 throw new IncompatibleClassException(superClass, classObj);
             }
             if (type == null) {
-                return classObj.getConstructor().newInstance();
+                return classObj.newInstance();
             } else {
                 Constructor<?> constructor = classObj.getConstructor(type);
                 return constructor.newInstance(parameter);
@@ -236,8 +236,8 @@ public class OptionHelper {
      * If <code>value</code> is "true", then <code>true</code> is returned. If
      * <code>value</code> is "false", then <code>true</code> is returned.
      * Otherwise, <code>default</code> is returned.
-     * <p> 
-     * Case of value is unimportant.
+     * <p/>
+     * <p> Case of value is unimportant.
      */
     public static boolean toBoolean(String value, boolean dEfault) {
         if (value == null) {

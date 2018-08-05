@@ -48,26 +48,9 @@ public class MDCFilter extends MatchingFilter {
     String MDCKey;
     String value;
 
-    
-    @Override
-    public void start() {
-        int errorCount = 0;
-        if(value == null) {
-            addError("\'value\' parameter is mandatory. Cannot start.");
-            errorCount++;
-        }
-        if(MDCKey == null) {
-            addError("\'MDCKey\' parameter is mandatory. Cannot start.");
-            errorCount++;
-        }
-        
-        if(errorCount == 0)
-            this.start = true;
-    }
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-        
-        if (!isStarted()) {
+        if (MDCKey == null) {
             return FilterReply.NEUTRAL;
         }
 

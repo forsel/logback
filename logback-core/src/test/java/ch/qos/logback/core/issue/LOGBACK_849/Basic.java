@@ -59,7 +59,7 @@ public class Basic {
                     long sleep = runUntil - System.currentTimeMillis();
                     System.out.println("will sleep " + sleep);
                     if (sleep > 0) {
-                        Thread.sleep(delay);
+                        Thread.currentThread().sleep(delay);
                     } else {
                         return;
                     }

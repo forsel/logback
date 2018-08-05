@@ -15,7 +15,6 @@ package ch.qos.logback.core;
 
 import ch.qos.logback.core.spi.AppenderAttachable;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
-import ch.qos.logback.core.util.InterruptUtil;
 
 import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -25,11 +24,11 @@ import java.util.concurrent.BlockingQueue;
  * This appender and derived classes, log events asynchronously.  In order to avoid loss of logging events, this
  * appender should be closed. It is the user's  responsibility to close appenders, typically at the end of the
  * application lifecycle.
- * <p>
+ * <p/>
  * This appender buffers events in a {@link BlockingQueue}. {@link Worker} thread created by this appender takes
  * events from the head of the queue, and dispatches them to the single appender attached to this appender.
- * <p>
- * Please refer to the <a href="http://logback.qos.ch/manual/appenders.html#AsyncAppender">logback manual</a> for
+ * <p/>
+ * <p>Please refer to the <a href="http://logback.qos.ch/manual/appenders.html#AsyncAppender">logback manual</a> for
  * further information about this appender.</p>
  *
  * @param <E>
@@ -67,8 +66,8 @@ public class AsyncAppenderBase<E> extends UnsynchronizedAppenderBase<E> implemen
     /**
      * Is the eventObject passed as parameter discardable? The base class's implementation of this method always returns
      * 'false' but sub-classes may (and do) override this method.
-     * <p>
-     * Note that only if the buffer is nearly full are events discarded. Otherwise, when the buffer is "not full"
+     * <p/>
+     * <p>Note that only if the buffer is nearly full are events discarded. Otherwise, when the buffer is "not full"
      * all events are logged.
      *
      * @param eventObject
@@ -124,12 +123,7 @@ public class AsyncAppenderBase<E> extends UnsynchronizedAppenderBase<E> implemen
         // interrupt the worker thread so that it can terminate. Note that the interruption can be consumed
         // by sub-appenders
         worker.interrupt();
-
-        InterruptUtil interruptUtil = new InterruptUtil(context);
-
         try {
-            interruptUtil.maskInterruptFlag();
-
             worker.join(maxFlushTime);
 
             // check to see if the thread ended and if not add a warning message
@@ -141,16 +135,9 @@ public class AsyncAppenderBase<E> extends UnsynchronizedAppenderBase<E> implemen
             }
 
         } catch (InterruptedException e) {
-            int remaining = blockingQueue.size();
-            addError("Failed to join worker thread. " + remaining + " queued events may be discarded.", e);
-        } finally {
-            interruptUtil.unmaskInterruptFlag();
+            addError("Failed to join worker thread. " + blockingQueue.size() + " queued events may be discarded.", e);
         }
     }
-
-
-
-
 
     @Override
     protected void append(E eventObject) {
@@ -169,23 +156,11 @@ public class AsyncAppenderBase<E> extends UnsynchronizedAppenderBase<E> implemen
         if (neverBlock) {
             blockingQueue.offer(eventObject);
         } else {
-            putUninterruptibly(eventObject);
-        }
-    }
-
-    private void putUninterruptibly(E eventObject) {
-        boolean interrupted = false;
-        try {
-            while (true) {
-                try {
-                    blockingQueue.put(eventObject);
-                    break;
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                }
-            }
-        } finally {
-            if (interrupted) {
+            try {
+                blockingQueue.put(eventObject);
+            } catch (InterruptedException e) {
+                // Interruption of current thread when in doAppend method should not be consumed
+                // by AsyncAppender
                 Thread.currentThread().interrupt();
             }
         }
@@ -234,11 +209,9 @@ public class AsyncAppenderBase<E> extends UnsynchronizedAppenderBase<E> implemen
 
     /**
      * The remaining capacity available in the blocking queue.
-     * <p>
-     * See also {@link java.util.concurrent.BlockingQueue#remainingCapacity() BlockingQueue#remainingCapacity()}
      *
      * @return the remaining capacity
-     * 
+     * @see {@link java.util.concurrent.BlockingQueue#remainingCapacity()}
      */
     public int getRemainingCapacity() {
         return blockingQueue.remainingCapacity();

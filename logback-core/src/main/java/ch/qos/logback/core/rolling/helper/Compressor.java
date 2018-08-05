@@ -17,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.zip.GZIPOutputStream;
@@ -93,8 +94,11 @@ public class Compressor extends ContextAwareBase {
         addInfo("ZIP compressing [" + file2zip + "] as [" + zippedFile + "]");
         createMissingTargetDirsIfNecessary(zippedFile);
 
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(nameOfFile2zip));
-                        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(nameOfZippedFile))) {
+        BufferedInputStream bis = null;
+        ZipOutputStream zos = null;
+        try {
+            bis = new BufferedInputStream(new FileInputStream(nameOfFile2zip));
+            zos = new ZipOutputStream(new FileOutputStream(nameOfZippedFile));
 
             ZipEntry zipEntry = computeZipEntry(innerEntryName);
             zos.putNextEntry(zipEntry);
@@ -106,13 +110,33 @@ public class Compressor extends ContextAwareBase {
                 zos.write(inbuf, 0, n);
             }
 
-            addInfo("Done ZIP compressing [" + file2zip + "] as [" + zippedFile + "]");
+            bis.close();
+            bis = null;
+            zos.close();
+            zos = null;
+
+            if (!file2zip.delete()) {
+                addStatus(new WarnStatus("Could not delete [" + nameOfFile2zip + "].", this));
+            }
         } catch (Exception e) {
             addStatus(new ErrorStatus("Error occurred while compressing [" + nameOfFile2zip + "] into [" + nameOfZippedFile + "].", this, e));
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (zos != null) {
+                try {
+                    zos.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
         }
-        if (!file2zip.delete()) {
-            addStatus(new WarnStatus("Could not delete [" + nameOfFile2zip + "].", this));
-        }
+
     }
 
     // http://jira.qos.ch/browse/LBCORE-98
@@ -135,7 +159,7 @@ public class Compressor extends ContextAwareBase {
     }
 
     ZipEntry computeZipEntry(String filename) {
-        String nameOfFileNestedWithinArchive = computeFileNameStrWithoutCompSuffix(filename, compressionMode);
+        String nameOfFileNestedWithinArchive = computeFileNameStr_WCS(filename, compressionMode);
         return new ZipEntry(nameOfFileNestedWithinArchive);
     }
 
@@ -162,9 +186,11 @@ public class Compressor extends ContextAwareBase {
         addInfo("GZ compressing [" + file2gz + "] as [" + gzedFile + "]");
         createMissingTargetDirsIfNecessary(gzedFile);
 
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(nameOfFile2gz));
-                        GZIPOutputStream gzos = new GZIPOutputStream(new FileOutputStream(nameOfgzedFile))) {
-
+        BufferedInputStream bis = null;
+        GZIPOutputStream gzos = null;
+        try {
+            bis = new BufferedInputStream(new FileInputStream(nameOfFile2gz));
+            gzos = new GZIPOutputStream(new FileOutputStream(nameOfgzedFile));
             byte[] inbuf = new byte[BUFFER_SIZE];
             int n;
 
@@ -172,18 +198,35 @@ public class Compressor extends ContextAwareBase {
                 gzos.write(inbuf, 0, n);
             }
 
-            addInfo("Done ZIP compressing [" + file2gz + "] as [" + gzedFile + "]");
+            bis.close();
+            bis = null;
+            gzos.close();
+            gzos = null;
+
+            if (!file2gz.delete()) {
+                addStatus(new WarnStatus("Could not delete [" + nameOfFile2gz + "].", this));
+            }
         } catch (Exception e) {
             addStatus(new ErrorStatus("Error occurred while compressing [" + nameOfFile2gz + "] into [" + nameOfgzedFile + "].", this, e));
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (gzos != null) {
+                try {
+                    gzos.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
         }
-
-        if (!file2gz.delete()) {
-            addStatus(new WarnStatus("Could not delete [" + nameOfFile2gz + "].", this));
-        }
-
     }
 
-    static public String computeFileNameStrWithoutCompSuffix(String fileNamePatternStr, CompressionMode compressionMode) {
+    static public String computeFileNameStr_WCS(String fileNamePatternStr, CompressionMode compressionMode) {
         int len = fileNamePatternStr.length();
         switch (compressionMode) {
         case GZ:
@@ -208,18 +251,20 @@ public class Compressor extends ContextAwareBase {
             addError("Failed to create parent directories for [" + file.getAbsolutePath() + "]");
         }
     }
-
+    
     @Override
     public String toString() {
         return this.getClass().getName();
     }
 
+    
     public Future<?> asyncCompress(String nameOfFile2Compress, String nameOfCompressedFile, String innerEntryName) throws RolloverFailure {
         CompressionRunnable runnable = new CompressionRunnable(nameOfFile2Compress, nameOfCompressedFile, innerEntryName);
-        ExecutorService executorService = context.getScheduledExecutorService();
+        ExecutorService executorService = context.getExecutorService();
         Future<?> future = executorService.submit(runnable);
         return future;
     }
+
 
     class CompressionRunnable implements Runnable {
         final String nameOfFile2Compress;
@@ -233,9 +278,9 @@ public class Compressor extends ContextAwareBase {
         }
 
         public void run() {
-
             Compressor.this.compress(nameOfFile2Compress, nameOfCompressedFile, innerEntryName);
         }
     }
 
+  
 }

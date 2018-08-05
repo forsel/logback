@@ -195,33 +195,30 @@ public final class Level implements java.io.Serializable {
      * Convert the string passed as argument to a Level. If the conversion fails,
      * then this method returns the value of <code>defaultLevel</code>.
      */
-    public static Level toLevel(final String sArg, Level defaultLevel) {
+    public static Level toLevel(String sArg, Level defaultLevel) {
         if (sArg == null) {
             return defaultLevel;
         }
 
-        // see LOGBACK-1288
-        final String in = sArg.trim();
-        
-        if (in.equalsIgnoreCase("ALL")) {
+        if (sArg.equalsIgnoreCase("ALL")) {
             return Level.ALL;
         }
-        if (in.equalsIgnoreCase("TRACE")) {
+        if (sArg.equalsIgnoreCase("TRACE")) {
             return Level.TRACE;
         }
-        if (in.equalsIgnoreCase("DEBUG")) {
+        if (sArg.equalsIgnoreCase("DEBUG")) {
             return Level.DEBUG;
         }
-        if (in.equalsIgnoreCase("INFO")) {
+        if (sArg.equalsIgnoreCase("INFO")) {
             return Level.INFO;
         }
-        if (in.equalsIgnoreCase("WARN")) {
+        if (sArg.equalsIgnoreCase("WARN")) {
             return Level.WARN;
         }
-        if (in.equalsIgnoreCase("ERROR")) {
+        if (sArg.equalsIgnoreCase("ERROR")) {
             return Level.ERROR;
         }
-        if (in.equalsIgnoreCase("OFF")) {
+        if (sArg.equalsIgnoreCase("OFF")) {
             return Level.OFF;
         }
         return defaultLevel;

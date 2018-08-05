@@ -26,7 +26,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.util.LogbackMDCAdapter;
-import ch.qos.logback.core.spi.SequenceNumberGenerator;
 
 import org.slf4j.spi.MDCAdapter;
 
@@ -99,12 +98,10 @@ public class LoggingEvent implements ILoggingEvent {
      */
     private long timeStamp;
 
-    private long sequenceNumber;
-
     public LoggingEvent() {
     }
 
-    public LoggingEvent(String fqcn, Logger logger, Level level, String message, Throwable throwable, Object[] argArray) {           
+    public LoggingEvent(String fqcn, Logger logger, Level level, String message, Throwable throwable, Object[] argArray) {
         this.fqnOfLoggerClass = fqcn;
         this.loggerName = logger.getName();
         this.loggerContext = logger.getLoggerContext();
@@ -114,28 +111,19 @@ public class LoggingEvent implements ILoggingEvent {
         this.message = message;
         this.argumentArray = argArray;
 
-        timeStamp = System.currentTimeMillis();
-       
-        if(loggerContext != null) {
-            SequenceNumberGenerator sequenceNumberGenerator = loggerContext.getSequenceNumberGenerator();
-            if(sequenceNumberGenerator != null)
-                sequenceNumber = sequenceNumberGenerator.nextSequenceNumber();
-        }
-       
-        
         if (throwable == null) {
             throwable = extractThrowableAnRearrangeArguments(argArray);
         }
 
         if (throwable != null) {
             this.throwableProxy = new ThrowableProxy(throwable);
-           
-            if (loggerContext != null && loggerContext.isPackagingDataEnabled()) {
+            LoggerContext lc = logger.getLoggerContext();
+            if (lc.isPackagingDataEnabled()) {
                 this.throwableProxy.calculatePackagingData();
             }
         }
 
-        
+        timeStamp = System.currentTimeMillis();
     }
 
     private Throwable extractThrowableAnRearrangeArguments(Object[] argArray) {
@@ -248,15 +236,6 @@ public class LoggingEvent implements ILoggingEvent {
         this.timeStamp = timeStamp;
     }
 
-    @Override
-    public long getSequenceNumber() {
-        return sequenceNumber;
-    }
-    
-    public void setSquenceNumber(long sn) {
-        sequenceNumber = sn;
-    }
-    
     public void setLevel(Level level) {
         if (this.level != null) {
             throw new IllegalStateException("The level has been already set for this event.");
@@ -377,6 +356,5 @@ public class LoggingEvent implements ILoggingEvent {
         throw new UnsupportedOperationException(this.getClass() + " does not support serialization. "
                         + "Use LoggerEventVO instance instead. See also LoggerEventVO.build method.");
     }
-
 
 }

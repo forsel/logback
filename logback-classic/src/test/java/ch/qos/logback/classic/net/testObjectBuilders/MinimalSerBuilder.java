@@ -13,11 +13,23 @@
  */
 package ch.qos.logback.classic.net.testObjectBuilders;
 
-public class MinimalSerBuilder implements Builder<MinimalSer> {
+import java.io.Serializable;
 
-    public MinimalSer build(int i) {
+public class MinimalSerBuilder implements Builder {
+
+    public Object build(int i) {
         return new MinimalSer(i);
     }
 
 }
 
+class MinimalSer implements Serializable {
+
+    private static final long serialVersionUID = 2807646397580899815L;
+
+    String message;
+
+    public MinimalSer(int i) {
+        message = Builder.MSG_PREFIX;
+    }
+}

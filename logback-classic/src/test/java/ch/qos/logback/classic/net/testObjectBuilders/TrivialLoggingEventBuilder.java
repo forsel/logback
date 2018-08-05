@@ -18,13 +18,13 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.LoggingEvent;
 
-public class TrivialLoggingEventBuilder implements Builder<LoggingEvent> {
+public class TrivialLoggingEventBuilder implements Builder {
 
     LoggerContext loggerContext = new LoggerContext();
 
     private Logger logger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
 
-    public LoggingEvent build(int i) {
+    public Object build(int i) {
         LoggingEvent le = new LoggingEvent();
         le.setTimeStamp(System.currentTimeMillis());
         le.setLevel(Level.DEBUG);

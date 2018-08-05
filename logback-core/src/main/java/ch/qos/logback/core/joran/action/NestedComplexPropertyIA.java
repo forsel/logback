@@ -118,7 +118,7 @@ public class NestedComplexPropertyIA extends ImplicitAction {
                 addInfo("Assuming default type [" + componentClass.getName() + "] for [" + localName + "] property");
             }
 
-            actionData.setNestedComplexProperty(componentClass.getConstructor().newInstance());
+            actionData.setNestedComplexProperty(componentClass.newInstance());
 
             // pass along the repository
             if (actionData.getNestedComplexProperty() instanceof ContextAware) {

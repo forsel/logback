@@ -61,16 +61,6 @@ public interface IAccessEvent extends DeferredProcessingAware {
     long getTimeStamp();
 
     /**
-     * The sequence number associated with this event. 
-     * 
-     * <p>Sequence numbers, if present, should be increasing monotonically.
-     *  
-     * @since 1.3.0
-     */
-
-    long getSequenceNumber();
-    
-    /**
      * The time elapsed between receiving the request and logging it in milliseconds.
      */
     long getElapsedTime();
@@ -108,7 +98,7 @@ public interface IAccessEvent extends DeferredProcessingAware {
 
     String getRequestHeader(String key);
 
-    Enumeration<String> getRequestHeaderNames();
+    Enumeration getRequestHeaderNames();
 
     Map<String, String> getRequestHeaderMap();
 

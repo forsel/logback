@@ -22,7 +22,7 @@ import ch.qos.logback.core.boolex.EventEvaluator;
 import ch.qos.logback.core.spi.ContextAwareBase;
 import ch.qos.logback.core.spi.LifeCycle;
 
-public class URLEvaluator extends ContextAwareBase implements EventEvaluator<IAccessEvent>, LifeCycle {
+public class URLEvaluator extends ContextAwareBase implements EventEvaluator, LifeCycle {
 
     boolean started;
     String name;
@@ -42,7 +42,8 @@ public class URLEvaluator extends ContextAwareBase implements EventEvaluator<IAc
     }
 
     @Override
-    public boolean evaluate(IAccessEvent event) throws NullPointerException, EvaluationException {
+    public boolean evaluate(Object eventObject) throws NullPointerException, EvaluationException {
+        IAccessEvent event = (IAccessEvent) eventObject;
         String url = event.getRequestURL();
         for (String expected : URLList) {
             if (url.contains(expected)) {

@@ -39,8 +39,7 @@ public class ConfigurationAction extends Action {
     static final String SCAN_ATTR = "scan";
     static final String SCAN_PERIOD_ATTR = "scanPeriod";
     static final String DEBUG_SYSTEM_PROPERTY_KEY = "logback.debug";
-    static final Duration SCAN_PERIOD_DEFAULT = Duration.buildByMinutes(1);
-    
+
     long threshold = 0;
 
     public void begin(InterpretationContext ic, String name, Attributes attributes) {
@@ -62,12 +61,14 @@ public class ConfigurationAction extends Action {
 
         processScanAttrib(ic, attributes);
 
+        ContextUtil contextUtil = new ContextUtil(context);
+        contextUtil.addHostNameAsProperty();
+
         LoggerContext lc = (LoggerContext) context;
         boolean packagingData = OptionHelper.toBoolean(ic.subst(attributes.getValue(PACKAGING_DATA_ATTR)), LoggerContext.DEFAULT_PACKAGING_DATA);
         lc.setPackagingDataEnabled(packagingData);
 
         if (EnvUtil.isGroovyAvailable()) {
-            ContextUtil contextUtil = new ContextUtil(context);
             contextUtil.addGroovyPackages(lc.getFrameworkPackages());
         }
 
@@ -104,7 +105,11 @@ public class ConfigurationAction extends Action {
             context.putObject(CoreConstants.RECONFIGURE_ON_CHANGE_TASK, rocTask);
 
             String scanPeriodAttrib = ic.subst(attributes.getValue(SCAN_PERIOD_ATTR));
-            Duration duration = getDurationOfScanPeriodAttribute(scanPeriodAttrib, SCAN_PERIOD_DEFAULT);
+            Duration duration = getDuration(scanAttrib, scanPeriodAttrib);
+
+            if (duration == null) {
+                return;
+            }
 
             addInfo("Will scan for changes in [" + mainURL + "] ");
             // Given that included files are encountered at a later phase, the complete list of files 
@@ -119,21 +124,16 @@ public class ConfigurationAction extends Action {
         }
     }
 
-    private Duration getDurationOfScanPeriodAttribute(String scanPeriodAttrib, Duration defaultDuration) {
+    private Duration getDuration(String scanAttrib, String scanPeriodAttrib) {
         Duration duration = null;
 
         if (!OptionHelper.isEmpty(scanPeriodAttrib)) {
             try {
                 duration = Duration.valueOf(scanPeriodAttrib);
-            } catch(IllegalStateException|IllegalArgumentException e) {
-               addWarn("Failed to parse 'scanPeriod' attribute ["+scanPeriodAttrib+"]", e);
-                // default duration will be set below
+
+            } catch (NumberFormatException nfe) {
+                addError("Error while converting [" + scanAttrib + "] to long", nfe);
             }
-        }
-        
-        if(duration == null) {
-            addInfo("No 'scanPeriod' specified. Defaulting to " + defaultDuration.toString());
-            duration = defaultDuration;
         }
         return duration;
     }

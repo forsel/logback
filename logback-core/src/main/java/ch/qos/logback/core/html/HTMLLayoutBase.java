@@ -195,7 +195,7 @@ public abstract class HTMLLayoutBase<E> extends LayoutBase<E> {
     }
 
     private void buildHeaderRowForTable(StringBuilder sbuf) {
-        Converter<E> c = head;
+        Converter c = head;
         String name;
         sbuf.append("<tr class=\"header\">");
         sbuf.append(LINE_SEPARATOR);
@@ -246,7 +246,7 @@ public abstract class HTMLLayoutBase<E> extends LayoutBase<E> {
         }
     }
 
-    protected String computeConverterName(Converter<E> c) {
+    protected String computeConverterName(Converter c) {
         String className = c.getClass().getSimpleName();
         int index = className.indexOf("Converter");
         if (index == -1) {

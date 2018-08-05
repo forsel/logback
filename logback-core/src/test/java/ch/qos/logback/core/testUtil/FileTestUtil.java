@@ -13,10 +13,11 @@
  */
 package ch.qos.logback.core.testUtil;
 
-import static org.junit.Assert.assertTrue;
+import ch.qos.logback.core.util.CoreTestConstants;
 
 import java.io.File;
 
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author Ceki G&uuml;lc&uuml;

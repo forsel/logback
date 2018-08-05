@@ -120,7 +120,6 @@ public abstract class DBAppenderBase<E> extends UnsynchronizedAppenderBase<E> {
 
     protected abstract void secondarySubAppend(E eventObject, Connection connection, long eventId) throws Throwable;
 
-    @SuppressWarnings("resource")
     protected long selectEventId(PreparedStatement insertStatement, Connection connection) throws SQLException, InvocationTargetException {
         ResultSet rs = null;
         Statement idStatement = null;

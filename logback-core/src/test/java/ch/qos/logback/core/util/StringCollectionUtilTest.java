@@ -71,6 +71,7 @@ public class StringCollectionUtilTest {
         assertTrue(values.contains("A"));
     }
 
+    @SuppressWarnings("unchecked")
     private List<String> stringToList(String... values) {
         List<String> result = new ArrayList<String>(values.length);
         result.addAll(Arrays.asList(values));

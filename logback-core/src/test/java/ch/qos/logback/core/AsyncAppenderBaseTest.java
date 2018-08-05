@@ -23,9 +23,9 @@ import org.junit.Test;
 import ch.qos.logback.core.helpers.NOPAppender;
 import ch.qos.logback.core.read.ListAppender;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
+import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.testUtil.DelayingListAppender;
 import ch.qos.logback.core.testUtil.NPEAppender;
-import ch.qos.logback.core.testUtil.StatusChecker;
 
 /**
  * @author Ceki G&uuml;lc&uuml;
@@ -103,7 +103,6 @@ public class AsyncAppenderBaseTest {
         asyncAppenderBase.stop();
         verify(delayingListAppender, 1);
         assertTrue(delayingListAppender.interrupted);
-        Thread.interrupted();
     }
 
     @Test(timeout = 2000)
@@ -238,49 +237,12 @@ public class AsyncAppenderBaseTest {
         asyncAppenderBase.addAppender(delayingListAppender);
         asyncAppenderBase.start();
         Thread.currentThread().interrupt();
-        asyncAppenderBase.doAppend(Integer.valueOf(0));
+        asyncAppenderBase.doAppend(new Integer(0));
         assertTrue(Thread.currentThread().isInterrupted());
-        // clear interrupt flag for subsequent tests
+        // clear flag for next test
         Thread.interrupted();
     }
 
-    // Interruption of current thread should not prevent logging. 
-    // See also http://jira.qos.ch/browse/LOGBACK-910
-    // and https://jira.qos.ch/browse/LOGBACK-1247
-    @Test
-    public void verifyInterruptionDoesNotPreventLogging() {
-        asyncAppenderBase.addAppender(listAppender);
-        asyncAppenderBase.start();
-        asyncAppenderBase.doAppend(Integer.valueOf(0));
-        Thread.currentThread().interrupt();
-        asyncAppenderBase.doAppend(Integer.valueOf(1));
-        asyncAppenderBase.doAppend(Integer.valueOf(1));
-        assertTrue(Thread.currentThread().isInterrupted());
-        // the interruption needs to be consumed
-        Thread.interrupted();
-        asyncAppenderBase.stop();
-        verify(listAppender, 3);
-    }
-   
-    @Test
-    public void verifyInterruptionFlagWhenStopping_INTERUPPTED() {
-        asyncAppenderBase.addAppender(listAppender);
-        asyncAppenderBase.start();
-        Thread.currentThread().interrupt();
-        asyncAppenderBase.stop();
-        assertTrue(Thread.currentThread().isInterrupted());
-        Thread.interrupted();
-    }
-    
-    @Test
-    public void verifyInterruptionFlagWhenStopping_NOT_INTERUPPTED() {
-        asyncAppenderBase.addAppender(listAppender);
-        asyncAppenderBase.start();
-        asyncAppenderBase.stop();
-        assertFalse(Thread.currentThread().isInterrupted());
-    }
-    
-    
     @Test
     public void verifyInterruptionOfWorkerIsSwallowed() {
         asyncAppenderBase.addAppender(delayingListAppender);

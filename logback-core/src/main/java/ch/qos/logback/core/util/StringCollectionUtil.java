@@ -36,6 +36,7 @@ public class StringCollectionUtil {
      * @param values subject value collection 
      * @param patterns patterns to match
      */
+    @SuppressWarnings("unchecked")
     public static void retainMatching(Collection<String> values, String... patterns) {
         retainMatching(values, Arrays.asList(patterns));
     }
@@ -76,6 +77,7 @@ public class StringCollectionUtil {
      * @param values subject value collection 
      * @param patterns patterns to match
      */
+    @SuppressWarnings("unchecked")
     public static void removeMatching(Collection<String> values, String... patterns) {
         removeMatching(values, Arrays.asList(patterns));
     }

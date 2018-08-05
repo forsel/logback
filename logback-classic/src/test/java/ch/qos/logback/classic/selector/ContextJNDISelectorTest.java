@@ -19,7 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import org.slf4j.LoggerFactoryFriend;
+import org.slf4j.impl.StaticLoggerBinderFriend;
 
 import ch.qos.logback.classic.ClassicConstants;
 import ch.qos.logback.classic.util.ContextSelectorStaticBinder;
@@ -35,7 +35,7 @@ public class ContextJNDISelectorTest {
     public void setUp() throws Exception {
 
         System.setProperty(ClassicConstants.LOGBACK_CONTEXT_SELECTOR, "JNDI");
-        LoggerFactoryFriend.reset();
+        StaticLoggerBinderFriend.reset();
 
         MockInitialContextFactory.initialize();
         MockInitialContext mic = MockInitialContextFactory.getContext();

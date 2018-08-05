@@ -61,9 +61,9 @@ public abstract class AbstractServerSocketAppender<E> extends AppenderBase<E> {
             ServerSocket socket = getServerSocketFactory().createServerSocket(getPort(), getBacklog(), getInetAddress());
             ServerListener<RemoteReceiverClient> listener = createServerListener(socket);
 
-            runner = createServerRunner(listener, getContext().getScheduledExecutorService());
+            runner = createServerRunner(listener, getContext().getExecutorService());
             runner.setContext(getContext());
-            getContext().getScheduledExecutorService().execute(runner);
+            getContext().getExecutorService().execute(runner);
             super.start();
         } catch (Exception ex) {
             addError("server startup error: " + ex, ex);
@@ -104,7 +104,7 @@ public abstract class AbstractServerSocketAppender<E> extends AppenderBase<E> {
     }
 
     /**
-     * Post process an event received via {@link #append append()}.
+     * Post process an event received via {@link #append(E)}.
      * @param event
      */
     protected abstract void postProcessEvent(E event);

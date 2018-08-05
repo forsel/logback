@@ -31,7 +31,7 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.DefaultNestedComponentRegistry;
 import ch.qos.logback.core.joran.util.beans.BeanDescriptionCache;
 import ch.qos.logback.core.spi.FilterReply;
-import ch.qos.logback.core.testUtil.StatusChecker;
+import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.util.AggregationType;
 import ch.qos.logback.core.util.StatusPrinter;
 
@@ -40,18 +40,18 @@ public class PropertySetterTest {
     DefaultNestedComponentRegistry defaultComponentRegistry = new DefaultNestedComponentRegistry();
 
     Context context = new ContextBase();
-    StatusChecker checker = new StatusChecker(context);
     House house = new House();
     
-    PropertySetter setter = new PropertySetter(new BeanDescriptionCache(context), house);
+    PropertySetter setter; // = new PropertySetter(new BeanDescriptionCache(context), basket);
 
     @Before
     public void setUp() {
-        setter.setContext(context);
+        //setter.setContext(context);
     }
 
     @After
     public void tearDown() {
+        StatusPrinter.print(context);
     }
 
     @Test
@@ -230,13 +230,8 @@ public class PropertySetterTest {
     // see also http://jira.qos.ch/browse/LOGBACK-1164
     @Test
     public void bridgeMethodsShouldBeIgnored() {
-        Orange orange = new Orange();
-        
-        PropertySetter orangeSetter = new PropertySetter(new BeanDescriptionCache(context), orange);
-        assertEquals(AggregationType.AS_BASIC_PROPERTY, orangeSetter.computeAggregationType(Citrus.PRECARP_PROPERTY_NAME));
-        assertEquals(AggregationType.AS_BASIC_PROPERTY, orangeSetter.computeAggregationType(Citrus.PREFIX_PROPERTY_NAME));
-        
-        StatusPrinter.print(context);
-        checker.assertIsWarningOrErrorFree();
+        FruitBasket fruitBasket = new FruitBasket();
+        PropertySetter fruitBasketSetter = new PropertySetter(new BeanDescriptionCache(context), fruitBasket);
+        fruitBasketSetter.computeAggregationType("orange");
     }
 }

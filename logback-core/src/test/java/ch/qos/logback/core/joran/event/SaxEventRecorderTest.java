@@ -13,9 +13,7 @@
  */
 package ch.qos.logback.core.joran.event;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.FileInputStream;
 import java.util.List;
@@ -23,14 +21,15 @@ import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import ch.qos.logback.core.status.StatusChecker;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.testUtil.CoreTestConstants;
-import ch.qos.logback.core.testUtil.StatusChecker;
+import ch.qos.logback.core.status.StatusManager;
+import ch.qos.logback.core.util.CoreTestConstants;
 
 /**
  * Test whether SaxEventRecorder does a good job.
@@ -72,6 +71,7 @@ public class SaxEventRecorderTest {
     @Test
     public void test2() throws Exception {
         List<SaxEvent> seList = doTest("ampEvent.xml");
+        StatusManager sm = context.getStatusManager();
         assertTrue(statusChecker.getHighestLevel(0) == Status.INFO);
         // dump(seList);
         assertEquals(3, seList.size());
@@ -83,6 +83,7 @@ public class SaxEventRecorderTest {
     @Test
     public void test3() throws Exception {
         List<SaxEvent> seList = doTest("inc.xml");
+        StatusManager sm = context.getStatusManager();
         assertTrue(statusChecker.getHighestLevel(0) == Status.INFO);
         // dump(seList);
         assertEquals(4, seList.size());

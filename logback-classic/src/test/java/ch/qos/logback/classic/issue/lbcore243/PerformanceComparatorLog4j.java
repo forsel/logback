@@ -13,9 +13,12 @@
  */
 package ch.qos.logback.classic.issue.lbcore243;
 
-import org.apache.log4j.xml.DOMConfigurator;
-
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import org.apache.log4j.xml.DOMConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // WARNING This code compiles but does not measure anything useful because log4j-over-slf4j is a dependency. Log4j
 // should be used instead
@@ -36,7 +39,7 @@ public class PerformanceComparatorLog4j {
     }
 
     private static long log4jDirectDebugCall() {
-        Integer j = Integer.valueOf(2);
+        Integer j = new Integer(2);
         long start = System.nanoTime();
         for (int i = 0; i < Common.loop; i++) {
             log4jlogger.debug("SEE IF THIS IS LOGGED " + j + ".");
@@ -47,10 +50,12 @@ public class PerformanceComparatorLog4j {
     static String DIR_PREFIX = "src/test/java/ch/qos/logback/classic/issue/lbcore243/";
 
     static void initLog4jWithoutImmediateFlush() {
-        DOMConfigurator.configure(DIR_PREFIX + "log4j_without_immediateFlush.xml");
+        DOMConfigurator domConfigurator = new DOMConfigurator();
+        domConfigurator.configure(DIR_PREFIX + "log4j_without_immediateFlush.xml");
     }
 
     static void initLog4jWithImmediateFlush() {
-        DOMConfigurator.configure(DIR_PREFIX + "log4j_with_immediateFlush.xml");
+        DOMConfigurator domConfigurator = new DOMConfigurator();
+        domConfigurator.configure(DIR_PREFIX + "log4j_with_immediateFlush.xml");
     }
 }

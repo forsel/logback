@@ -24,8 +24,6 @@ import java.util.Random;
 
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.ContextBase;
-import ch.qos.logback.core.testUtil.CoreTestConstants;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

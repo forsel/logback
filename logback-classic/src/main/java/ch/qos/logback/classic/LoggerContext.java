@@ -37,7 +37,6 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.boolex.EventEvaluator;
 import ch.qos.logback.core.spi.FilterReply;
 import ch.qos.logback.core.spi.LifeCycle;
-import ch.qos.logback.core.spi.SequenceNumberGenerator;
 import ch.qos.logback.core.status.StatusListener;
 import ch.qos.logback.core.status.StatusManager;
 import ch.qos.logback.core.status.WarnStatus;
@@ -66,8 +65,7 @@ public class LoggerContext extends ContextBase implements ILoggerFactory, LifeCy
     private LoggerContextVO loggerContextRemoteView;
     private final TurboFilterList turboFilterList = new TurboFilterList();
     private boolean packagingDataEnabled = DEFAULT_PACKAGING_DATA;
-    SequenceNumberGenerator sequenceNumberGenerator = null; // by default there is no SequenceNumberGenerator
-    
+
     private int maxCallerDataDepth = ClassicConstants.DEFAULT_MAX_CALLEDER_DATA_DEPTH;
 
     int resetCount = 0;
@@ -115,7 +113,7 @@ public class LoggerContext extends ContextBase implements ILoggerFactory, LifeCy
     }
 
     @Override
-    public Logger getLogger(final String name) {
+    public final Logger getLogger(final String name) {
 
         if (name == null) {
             throw new IllegalArgumentException("name argument cannot be null");
@@ -377,9 +375,5 @@ public class LoggerContext extends ContextBase implements ILoggerFactory, LifeCy
      */
     public List<String> getFrameworkPackages() {
         return frameworkPackages;
-    }
-
-    public SequenceNumberGenerator getSequenceNumberGenerator() {
-        return null;
     }
 }

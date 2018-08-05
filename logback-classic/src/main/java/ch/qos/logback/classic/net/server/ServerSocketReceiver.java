@@ -45,7 +45,6 @@ public class ServerSocketReceiver extends ReceiverBase {
     private String address;
 
     private ServerSocket serverSocket;
-    @SuppressWarnings("rawtypes")
     private ServerRunner runner;
 
     /**
@@ -57,7 +56,7 @@ public class ServerSocketReceiver extends ReceiverBase {
 
             ServerListener<RemoteAppenderClient> listener = createServerListener(serverSocket);
 
-            runner = createServerRunner(listener, getContext().getScheduledExecutorService());
+            runner = createServerRunner(listener, getContext().getExecutorService());
             runner.setContext(getContext());
             return true;
         } catch (Exception ex) {
@@ -71,7 +70,6 @@ public class ServerSocketReceiver extends ReceiverBase {
         return new RemoteAppenderServerListener(socket);
     }
 
-    @SuppressWarnings("rawtypes")
     protected ServerRunner createServerRunner(ServerListener<RemoteAppenderClient> listener, Executor executor) {
         return new RemoteAppenderServerRunner(listener, executor);
     }

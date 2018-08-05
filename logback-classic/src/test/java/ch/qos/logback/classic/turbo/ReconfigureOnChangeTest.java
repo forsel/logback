@@ -17,6 +17,7 @@ import ch.qos.logback.classic.ClassicTestConstants;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.gaffer.GafferConfigurator;
 import ch.qos.logback.classic.issue.lbclassic135.LoggingRunnable;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.spi.TurboFilterList;
@@ -29,13 +30,14 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
 import ch.qos.logback.core.status.InfoStatus;
 import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.testUtil.CoreTestConstants;
+import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.testUtil.EnvUtilForTests;
 import ch.qos.logback.core.testUtil.FileTestUtil;
 import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.testUtil.StatusChecker;
+import ch.qos.logback.core.util.CoreTestConstants;
 import ch.qos.logback.core.util.StatusPrinter;
 import org.junit.*;
+import org.slf4j.helpers.BogoPerf;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -113,10 +115,10 @@ public class ReconfigureOnChangeTest {
         jc.doConfigure(is);
     }
 
-//    void gConfigure(File file) throws JoranException {
-//        GafferConfigurator gc = new GafferConfigurator(loggerContext);
-//        gc.run(file);
-//    }
+    void gConfigure(File file) throws JoranException {
+        GafferConfigurator gc = new GafferConfigurator(loggerContext);
+        gc.run(file);
+    }
 
     RunnableWithCounterAndDone[] buildRunnableArray(File configFile, UpdateType updateType) {
         RunnableWithCounterAndDone[] rArray = new RunnableWithCounterAndDone[THREAD_COUNT];
@@ -138,23 +140,23 @@ public class ReconfigureOnChangeTest {
         StatusPrinter.print(loggerContext);
     }
 
-//    @Test
-//    public void gafferInstallFilter() throws JoranException, IOException, InterruptedException {
-//        File file = new File(G_SCAN1_FILE_AS_STR);
-//        gConfigure(file);
-//        List<File> fileList = getConfigurationFileList(loggerContext);
-//        assertThatListContainsFile(fileList, file);
-//        assertThatFirstFilterIsROCF();
-//
-//        rocfDetachReconfigurationToNewThreadAndAwaitTermination();
-//
-//        fileList = getConfigurationFileList(loggerContext);
-//        assertThatListContainsFile(fileList, file);
-//        assertThatFirstFilterIsROCF();
-//
-//        // check that rcof filter installed on two occasions
-//        assertEquals(2, checker.matchCount("Will scan for changes in"));
-//    }
+    @Test
+    public void gafferInstallFilter() throws JoranException, IOException, InterruptedException {
+        File file = new File(G_SCAN1_FILE_AS_STR);
+        gConfigure(file);
+        List<File> fileList = getConfigurationFileList(loggerContext);
+        assertThatListContainsFile(fileList, file);
+        assertThatFirstFilterIsROCF();
+
+        rocfDetachReconfigurationToNewThreadAndAwaitTermination();
+
+        fileList = getConfigurationFileList(loggerContext);
+        assertThatListContainsFile(fileList, file);
+        assertThatFirstFilterIsROCF();
+
+        // check that rcof filter installed on two occasions
+        assertEquals(2, checker.matchCount("Will scan for changes in"));
+    }
 
     private void rocfDetachReconfigurationToNewThreadAndAwaitTermination() throws InterruptedException {
         ReconfigureOnChangeFilter reconfigureOnChangeFilter = (ReconfigureOnChangeFilter) getFirstTurboFilter();
@@ -338,9 +340,8 @@ public class ReconfigureOnChangeTest {
         double avg = indirectLoop();
         System.out.println(avg);
         // the reference was computed on Orion (Ceki's computer)
-        @SuppressWarnings("unused")
         long referencePerf = 68;
-        //BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
+        BogoPerf.assertDuration(avg, referencePerf, CoreConstants.REFERENCE_BIPS);
     }
 
     void addInfo(String msg, Object o) {

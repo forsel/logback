@@ -40,8 +40,7 @@ import org.junit.Test;
 import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.pattern.SpacePadder;
 import ch.qos.logback.core.rolling.helper.RollingCalendar;
-import ch.qos.logback.core.rolling.testUtil.ScaffoldingForRollingTests;
-import ch.qos.logback.core.testUtil.StatusChecker;
+import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.util.FileSize;
 import ch.qos.logback.core.util.FixedRateInvocationGate;
 import ch.qos.logback.core.util.StatusPrinter;
@@ -130,7 +129,7 @@ public class TimeBasedRollingWithArchiveRemoval_Test extends ScaffoldingForRolli
     long generateDailyRolloverAndCheckFileCount(ConfigParameters cp) {
         long millisAtEnd = generateDailyRollover(cp);
         int periodBarriersCrossed = computeCrossedDayBarriers(currentTime, millisAtEnd);
-        System.out.println("**** periodBarriersCrossed=" + periodBarriersCrossed);
+        System.out.println("**** " + periodBarriersCrossed);
         checkFileCount(expectedCountWithoutFoldersWithInactivity(cp.maxHistory, periodBarriersCrossed, cp.startInactivity + cp.numInactivityPeriods));
         return millisAtEnd;
     }
@@ -428,34 +427,25 @@ public class TimeBasedRollingWithArchiveRemoval_Test extends ScaffoldingForRolli
 
         System.out.println("cp.periodDurationInMillis=" + cp.periodDurationInMillis + ", tickDuration=:" + tickDuration + ", runLength=" + runLength);
         for (int i = 0; i <= runLength; i++) {
-            Date currentDate = new Date(tbrp.timeBasedFileNamingAndTriggeringPolicy.getCurrentTime());
             if (i < startInactivityIndex || i > endInactivityIndex) {
                 StringBuilder sb = new StringBuilder("Hello");
-                String currentDateStr = currentDate.toString();
                 String iAsString = Integer.toString(i);
-                sb.append(currentDateStr);
-                SpacePadder.spacePad(sb, 66 + (3 - iAsString.length() - currentDateStr.length()));
-                sb.append(iAsString);
+                SpacePadder.spacePad(sb, 66 + (6 - iAsString.length()));
                 rfa.doAppend(sb.toString());
-            } 
+            } else {
+                @SuppressWarnings("unused")
+                Date d = new Date(tbrp.timeBasedFileNamingAndTriggeringPolicy.getCurrentTime());
+                System.out.print("");
+            }
 
             tbrp.timeBasedFileNamingAndTriggeringPolicy.setCurrentTime(addTime(tbrp.timeBasedFileNamingAndTriggeringPolicy.getCurrentTime(), tickDuration));
-            
             add(tbrp.compressionFuture);
             add(tbrp.cleanUpFuture);
             waitForJobsToComplete();
         }
-        
-        
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         rfa.stop();
 
-        System.out.println("Current time at end of loop: "+new Date(tbrp.timeBasedFileNamingAndTriggeringPolicy.getCurrentTime()));
+        System.out.println(new Date(tbrp.timeBasedFileNamingAndTriggeringPolicy.getCurrentTime()));
         return tbrp.timeBasedFileNamingAndTriggeringPolicy.getCurrentTime();
     }
 

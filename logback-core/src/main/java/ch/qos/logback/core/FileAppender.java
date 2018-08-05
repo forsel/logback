@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import ch.qos.logback.core.recovery.ResilientFileOutputStream;
-import ch.qos.logback.core.util.ContextUtil;
-import ch.qos.logback.core.util.FileSize;
 import ch.qos.logback.core.util.FileUtil;
 
 /**
@@ -37,8 +35,6 @@ import ch.qos.logback.core.util.FileUtil;
  * @author Ceki G&uuml;lc&uuml;
  */
 public class FileAppender<E> extends OutputStreamAppender<E> {
-
-    public static final long DEFAULT_BUFFER_SIZE = 8192;
 
     static protected String COLLISION_WITH_EARLIER_APPENDER_URL = CODES_URL + "#earlier_fa_collision";
 
@@ -55,8 +51,6 @@ public class FileAppender<E> extends OutputStreamAppender<E> {
     protected String fileName = null;
 
     private boolean prudent = false;
-
-    private FileSize bufferSize = new FileSize(DEFAULT_BUFFER_SIZE);
 
     /**
      * The <b>File</b> property takes a string value which should be the name of
@@ -139,35 +133,24 @@ public class FileAppender<E> extends OutputStreamAppender<E> {
         }
     }
 
-    @Override
-    public void stop() {
-        super.stop();
-
-        Map<String, String> map = ContextUtil.getFilenameCollisionMap(context);
-        if (map == null || getName() == null)
-            return;
-
-        map.remove(getName());
-    }
-
     protected boolean checkForFileCollisionInPreviousFileAppenders() {
         boolean collisionsDetected = false;
         if (fileName == null) {
             return false;
         }
         @SuppressWarnings("unchecked")
-        Map<String, String> previousFilesMap = (Map<String, String>) context.getObject(CoreConstants.FA_FILENAME_COLLISION_MAP);
-        if (previousFilesMap == null) {
+        Map<String, String> map = (Map<String, String>) context.getObject(CoreConstants.RFA_FILENAME_PATTERN_COLLISION_MAP);
+        if (map == null) {
             return collisionsDetected;
         }
-        for (Entry<String, String> entry : previousFilesMap.entrySet()) {
+        for (Entry<String, String> entry : map.entrySet()) {
             if (fileName.equals(entry.getValue())) {
                 addErrorForCollision("File", entry.getValue(), entry.getKey());
                 collisionsDetected = true;
             }
         }
         if (name != null) {
-            previousFilesMap.put(getName(), fileName);
+            map.put(getName(), fileName);
         }
         return collisionsDetected;
     }
@@ -201,7 +184,7 @@ public class FileAppender<E> extends OutputStreamAppender<E> {
                 addError("Failed to create parent directories for [" + file.getAbsolutePath() + "]");
             }
 
-            ResilientFileOutputStream resilientFos = new ResilientFileOutputStream(file, append, bufferSize.getSize());
+            ResilientFileOutputStream resilientFos = new ResilientFileOutputStream(file, append);
             resilientFos.setContext(context);
             setOutputStream(resilientFos);
         } finally {
@@ -230,11 +213,6 @@ public class FileAppender<E> extends OutputStreamAppender<E> {
 
     public void setAppend(boolean append) {
         this.append = append;
-    }
-    
-    public void setBufferSize(FileSize bufferSize) {
-        addInfo("Setting bufferSize to ["+bufferSize.toString()+"]");
-        this.bufferSize = bufferSize;
     }
 
     private void safeWrite(E event) throws IOException {

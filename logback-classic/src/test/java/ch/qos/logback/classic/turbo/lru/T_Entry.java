@@ -13,7 +13,7 @@
  */
 package ch.qos.logback.classic.turbo.lru;
 
-public class T_Entry<K> implements Comparable<T_Entry<?>> {
+public class T_Entry<K> implements Comparable {
 
     K k;
     long sequenceNumber;
@@ -23,12 +23,12 @@ public class T_Entry<K> implements Comparable<T_Entry<?>> {
         this.sequenceNumber = sn;
     }
 
-    public int compareTo(T_Entry<?> o) {
+    public int compareTo(Object o) {
         if (!(o instanceof T_Entry)) {
             throw new IllegalArgumentException("arguments must be of type " + T_Entry.class);
         }
 
-        T_Entry<?> other = o;
+        T_Entry other = (T_Entry) o;
         if (sequenceNumber > other.sequenceNumber) {
             return 1;
         }

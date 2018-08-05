@@ -13,6 +13,9 @@
  */
 package org.slf4j.impl;
 
+import static org.junit.Assert.assertEquals;
+
+import ch.qos.logback.core.status.StatusChecker;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactoryFriend;
 
-import ch.qos.logback.classic.ClassicConstants;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.status.Status;
 import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.testUtil.StatusChecker;
 import ch.qos.logback.core.util.StatusPrinter;
 
 public class RecursiveInitializationTest {
@@ -32,13 +35,14 @@ public class RecursiveInitializationTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ClassicConstants.CONFIG_FILE_PROPERTY, "recursiveInit.xml");
+        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, "recursiveInit.xml");
+        StaticLoggerBinderFriend.reset();
         LoggerFactoryFriend.reset();
     }
 
     @After
     public void tearDown() throws Exception {
-        System.clearProperty(ClassicConstants.CONFIG_FILE_PROPERTY);
+        System.clearProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
     }
 
     @Test
@@ -49,7 +53,7 @@ public class RecursiveInitializationTest {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
         StatusChecker statusChecker = new StatusChecker(loggerContext);
-        statusChecker.assertIsErrorFree();
+        assertEquals("Was expecting no errors", Status.WARN, statusChecker.getHighestLevel(0));
     }
 
 }

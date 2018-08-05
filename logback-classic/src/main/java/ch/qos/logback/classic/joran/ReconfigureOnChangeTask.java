@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.gaffer.GafferUtil;
 import ch.qos.logback.classic.util.EnvUtil;
 import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.joran.event.SaxEvent;
@@ -67,9 +68,7 @@ public class ReconfigureOnChangeTask extends ContextAwareBase implements Runnabl
                 lc.reset();
                 // avoid directly referring to GafferConfigurator so as to avoid
                 // loading groovy.lang.GroovyObject . See also http://jira.qos.ch/browse/LBCLASSIC-214
-                // GafferUtil.runGafferConfiguratorOn(lc, this, mainConfigurationURL);
-                addError("Groovy configuration disabled due to Java 9 compilation issues.");
-                
+                GafferUtil.runGafferConfiguratorOn(lc, this, mainConfigurationURL);
             } else {
                 addError("Groovy classes are not available on the class path. ABORTING INITIALIZATION.");
             }

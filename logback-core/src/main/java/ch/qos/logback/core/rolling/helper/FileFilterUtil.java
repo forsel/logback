@@ -105,7 +105,7 @@ public class FileFilterUtil {
             throw new IllegalStateException("The regex [" + stemRegex + "] should match [" + lastFileName + "]");
         }
         String counterAsStr = m.group(1);
-        return Integer.parseInt(counterAsStr);
+        return new Integer(counterAsStr).intValue();
     }
 
     public static String slashify(String in) {

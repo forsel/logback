@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.core.net.mock.MockContext;
-import ch.qos.logback.core.net.server.test.MockServerListener;
 
 public class ConcurrentServerRunnerTest {
 

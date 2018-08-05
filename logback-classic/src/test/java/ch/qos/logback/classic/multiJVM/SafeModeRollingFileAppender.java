@@ -69,7 +69,7 @@ public class SafeModeRollingFileAppender {
         rfa.setPrudent(safetyMode);
         rfa.setContext(loggerContext);
 
-        TimeBasedRollingPolicy<ILoggingEvent> tbrp = new TimeBasedRollingPolicy<>();
+        TimeBasedRollingPolicy tbrp = new TimeBasedRollingPolicy();
 
         tbrp.setContext(loggerContext);
         tbrp.setFileNamePattern(filename + "-%d{" + DATE_PATTERN + "}.log");

@@ -32,7 +32,7 @@ import ch.qos.logback.core.joran.event.StartEvent;
 import ch.qos.logback.core.spi.ContextAwareImpl;
 
 /**
- * {@code Interpreter} is Joran's main driving class. It extends SAX
+ * <id>Interpreter</id> is Joran's main driving class. It extends SAX
  * {@link org.xml.sax.helpers.DefaultHandler DefaultHandler} which invokes
  * various {@link Action actions} according to predefined patterns.
  * 
@@ -42,11 +42,11 @@ import ch.qos.logback.core.spi.ContextAwareImpl;
  * 
  * <p>
  * The pattern corresponding to a top level &lt;a&gt; element is the string
- * "a".
+ * <id>"a"</id>.
  * 
  * <p>
  * The pattern corresponding to an element &lt;b&gt; embedded within a top level
- * &lt;a&gt; element is the string {@code "a/b"}.
+ * &lt;a&gt; element is the string <id>"a/b"</id>.
  * 
  * <p>
  * The pattern corresponding to an &lt;b&gt; and any level of nesting is

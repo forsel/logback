@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import ch.qos.logback.core.net.server.Client;
 import ch.qos.logback.core.net.server.ServerSocketListener;
-import ch.qos.logback.core.net.server.test.ServerSocketUtil;
 
 /**
  * Unit tests for {@link ServerSocketListener}.
@@ -36,7 +35,6 @@ import ch.qos.logback.core.net.server.test.ServerSocketUtil;
 public class ServerSocketListenerTest {
 
     private ServerSocket serverSocket;
-    @SuppressWarnings("rawtypes")
     private ServerSocketListener listener;
 
     @Before

@@ -18,15 +18,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 
+import ch.qos.logback.core.joran.spi.ElementPath;
+import ch.qos.logback.core.joran.spi.ElementSelector;
 import org.junit.Test;
 
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.TrivialConfigurator;
 import ch.qos.logback.core.joran.action.Action;
-import ch.qos.logback.core.joran.spi.ElementSelector;
 import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.testUtil.CoreTestConstants;
+import ch.qos.logback.core.util.CoreTestConstants;
 
 public class InPlayFireTest {
 

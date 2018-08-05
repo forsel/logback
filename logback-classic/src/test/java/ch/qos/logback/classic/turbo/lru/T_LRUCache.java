@@ -34,6 +34,7 @@ public class T_LRUCache<K> {
         this.cacheSize = size;
     }
 
+    @SuppressWarnings("unchecked")
     synchronized public void put(K k) {
         sequenceNumber++;
         T_Entry<K> te = getEntry(k);
@@ -49,6 +50,7 @@ public class T_LRUCache<K> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     synchronized public K get(K k) {
         T_Entry<K> te = getEntry(k);
         if (te == null) {

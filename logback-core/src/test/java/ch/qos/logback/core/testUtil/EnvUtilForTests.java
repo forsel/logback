@@ -15,6 +15,10 @@ package ch.qos.logback.core.testUtil;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
+import ch.qos.logback.core.util.CoreTestConstants;
 
 public class EnvUtilForTests {
 

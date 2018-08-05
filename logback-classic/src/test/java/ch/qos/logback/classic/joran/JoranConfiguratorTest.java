@@ -44,8 +44,8 @@ import ch.qos.logback.core.pattern.parser.Parser;
 import ch.qos.logback.core.read.ListAppender;
 import ch.qos.logback.core.spi.ScanException;
 import ch.qos.logback.core.status.Status;
+import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.testUtil.StatusChecker;
 import ch.qos.logback.core.testUtil.StringListAppender;
 import ch.qos.logback.core.util.CachingDateFormatter;
 
@@ -390,6 +390,7 @@ public class JoranConfiguratorTest {
     @Test
     public void properties() throws JoranException {
         String configFileAsStr = ClassicTestConstants.JORAN_INPUT_PREFIX + "properties.xml";
+        assertNull(loggerContext.getProperty(CoreConstants.HOSTNAME_KEY));
         assertNull(System.getProperty("sys"));
 
         configure(configFileAsStr);
@@ -400,13 +401,6 @@ public class JoranConfiguratorTest {
         assertEquals("tem", System.getProperty("sys"));
         assertNotNull(loggerContext.getProperty("path"));
         checker.assertIsErrorFree();
-    }
-
-    @Test
-    public void hostnameProperty() throws JoranException {
-        String configFileAsStr = ClassicTestConstants.JORAN_INPUT_PREFIX + "hostnameProperty.xml";
-        configure(configFileAsStr);
-        assertEquals("A", loggerContext.getProperty(CoreConstants.HOSTNAME_KEY));
     }
 
     // see also http://jira.qos.ch/browse/LBCORE-254
@@ -433,20 +427,12 @@ public class JoranConfiguratorTest {
         configure(configFileAsStr);
         assertTrue(loggerContext.isPackagingDataEnabled());
     }
-
+    
+    
     @Test
     public void valueOfConvention() throws JoranException {
         String configFileAsStr = ClassicTestConstants.JORAN_INPUT_PREFIX + "valueOfConvention.xml";
         configure(configFileAsStr);
         checker.assertIsWarningOrErrorFree();
     }
-    
-    @Test
-    public void shutdownHookTest() throws JoranException {
-        String configFileAsStr = ClassicTestConstants.JORAN_INPUT_PREFIX + "issues/logback_1162.xml";
-        loggerContext.putProperty("output_dir", ClassicTestConstants.OUTPUT_DIR_PREFIX+"logback_issue_1162/");
-        configure(configFileAsStr);
-        assertNotNull(loggerContext.getObject(CoreConstants.SHUTDOWN_HOOK_THREAD));
-    }
-
 }

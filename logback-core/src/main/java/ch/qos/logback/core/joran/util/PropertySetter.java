@@ -15,7 +15,6 @@
 package ch.qos.logback.core.joran.util;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import ch.qos.logback.core.joran.spi.DefaultClass;
@@ -30,8 +29,8 @@ import ch.qos.logback.core.util.PropertySetterException;
 /**
  * General purpose Object property setter. Clients repeatedly invokes
  * {@link #setProperty setProperty(name,value)} in order to invoke setters on
- * the Object specified in the constructor. This class relies on reflection
- * to analyze the given Object Class.
+ * the Object specified in the constructor. This class relies on the JavaBeans
+ * {@link Introspector} to analyze the given Object Class using reflection.
  *
  * <p>
  * Usage:
@@ -45,7 +44,7 @@ import ch.qos.logback.core.util.PropertySetterException;
  *
  * will cause the invocations anObject.setName("Joe"), anObject.setAge(32), and
  * setMale(true) if such methods exist with those signatures. Otherwise an
- * {@link PropertySetterException} is thrown.
+ * {@link IntrospectionException} are thrown.
  *
  * @author Anders Kristensen
  * @author Ceki Gulcu
@@ -215,15 +214,17 @@ public class PropertySetter extends ContextAwareBase {
         // returns null.
         Object o;
         try {
-            o = clazz.getDeclaredConstructor().newInstance();
+            o = clazz.newInstance();
             if (o != null) {
                 return true;
             } else {
                 return false;
             }
-        } catch (InstantiationException|IllegalAccessException | InvocationTargetException | NoSuchMethodException  e) {
+        } catch (InstantiationException e) {
             return false;
-        }  
+        } catch (IllegalAccessException e) {
+            return false;
+        }
     }
 
     public Class<?> getObjClass() {

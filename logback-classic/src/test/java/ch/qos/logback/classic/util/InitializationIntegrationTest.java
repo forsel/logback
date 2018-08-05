@@ -13,14 +13,14 @@
  */
 package ch.qos.logback.classic.util;
 
-import static org.junit.Assert.assertNotNull;
-
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.core.util.StatusPrinter;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Ceki G&uuml;lc&uuml;
@@ -29,10 +29,9 @@ public class InitializationIntegrationTest {
 
     @Test
     public void smoke() {
-        @SuppressWarnings("unused")
         Logger logger = (Logger) LoggerFactory.getLogger(this.getClass());
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        ListAppender<ILoggingEvent> la = (ListAppender<ILoggingEvent>) root.getAppender("LIST");
+        ListAppender la = (ListAppender) root.getAppender("LIST");
         assertNotNull(la);
     }
 }

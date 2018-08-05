@@ -145,10 +145,11 @@ p.menu_header {
 }
 
 #content {
+  min-width:50em;
   margin: 0px 15em 0px 15em;
   padding: 0px;
-  line-height: 130%;
   background-color: #ffffff;  
+  line-height: 130%;
 }
 
 #content img {

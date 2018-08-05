@@ -13,21 +13,20 @@
  */
 package org.slf4j.impl;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.PrintStream;
+import ch.qos.logback.classic.ClassicTestConstants;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.CoreConstants;
+import ch.qos.logback.core.status.NopStatusListener;
+import ch.qos.logback.core.testUtil.RandomUtil;
+import ch.qos.logback.core.util.TeeOutputStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.LoggerFactoryFriend;
 
-import ch.qos.logback.classic.ClassicConstants;
-import ch.qos.logback.classic.ClassicTestConstants;
-import ch.qos.logback.core.CoreConstants;
-import ch.qos.logback.core.status.NopStatusListener;
-import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.testUtil.TeeOutputStream;
+import java.io.PrintStream;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ceki G&uuml;lc&uuml;
@@ -56,16 +55,16 @@ public class InitializationOutputTest {
     @After
     public void tearDown() {
         System.setOut(original);
-        System.clearProperty(ClassicConstants.CONFIG_FILE_PROPERTY);
-        System.clearProperty(CoreConstants.STATUS_LISTENER_CLASS_KEY);
+        System.clearProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
+        System.clearProperty(CoreConstants.STATUS_LISTENER_CLASS);
     }
 
     @Test
     public void noOutputIfContextHasAStatusListener() {
-        System.setProperty(ClassicConstants.CONFIG_FILE_PROPERTY, ClassicTestConstants.INPUT_PREFIX + "issue/logback292.xml");
-        System.setProperty(CoreConstants.STATUS_LISTENER_CLASS_KEY, NopStatusListener.class.getName());
+        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, ClassicTestConstants.INPUT_PREFIX + "issue/logback292.xml");
+        System.setProperty(CoreConstants.STATUS_LISTENER_CLASS, NopStatusListener.class.getName());
 
-        LoggerFactoryFriend.reset();
+        StaticLoggerBinderFriend.reset();
         assertEquals(0, tee.baos.size());
     }
 

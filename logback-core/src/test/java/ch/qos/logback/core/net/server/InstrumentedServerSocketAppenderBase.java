@@ -34,7 +34,6 @@ public class InstrumentedServerSocketAppenderBase extends AbstractServerSocketAp
     private final ServerListener<RemoteReceiverClient> listener;
     private final ServerRunner<RemoteReceiverClient> runner;
 
-    @SuppressWarnings("rawtypes")
     private ServerListener lastListener;
 
     public InstrumentedServerSocketAppenderBase(ServerSocket serverSocket) {
@@ -93,7 +92,6 @@ public class InstrumentedServerSocketAppenderBase extends AbstractServerSocketAp
         return listener;
     }
 
-    @SuppressWarnings("rawtypes")
     public ServerListener getLastListener() {
         return lastListener;
     }
