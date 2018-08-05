@@ -16,8 +16,6 @@ package ch.qos.logback.core.rolling.helper;
 import static ch.qos.logback.core.CoreConstants.UNBOUNDED_TOTAL_SIZE_CAP;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -31,7 +29,7 @@ import ch.qos.logback.core.util.FileSize;
 public class TimeBasedArchiveRemover extends ContextAwareBase implements ArchiveRemover {
 
     static protected final long UNINITIALIZED = -1;
-    // aim for 64 days, except in case of hourly rollover
+    // aim for 32 days, except in case of hourly rollover
     static protected final long INACTIVITY_TOLERANCE_IN_MILLIS = 32L * (long) CoreConstants.MILLIS_IN_ONE_DAY;
     static final int MAX_VALUE_FOR_INACTIVITY_PERIODS = 14 * 24; // 14 days in case of hourly rollover
 
@@ -48,9 +46,11 @@ public class TimeBasedArchiveRemover extends ContextAwareBase implements Archive
         this.parentClean = computeParentCleaningFlag(fileNamePattern);
     }
 
+    int callCount = 0;
     public void clean(Date now) {
+ 
         long nowInMillis = now.getTime();
-        // for a live appender periodsElapsed is usually one
+        // for a live appender periodsElapsed is expected to be 1
         int periodsElapsed = computeElapsedPeriodsSinceLastClean(nowInMillis);
         lastHeartBeat = nowInMillis;
         if (periodsElapsed > 1) {
@@ -93,12 +93,12 @@ public class TimeBasedArchiveRemover extends ContextAwareBase implements Archive
     }
 
     void capTotalSize(Date now) {
-        int totalSize = 0;
-        int totalRemoved = 0;
+        long totalSize = 0;
+        long totalRemoved = 0;
         for (int offset = 0; offset < maxHistory; offset++) {
             Date date = rc.getEndOfNextNthPeriod(now, -offset);
             File[] matchingFileArray = getFilesInPeriod(date);
-            descendingSortByLastModified(matchingFileArray);
+            descendingSort(matchingFileArray, date);
             for (File f : matchingFileArray) {
                 long size = f.length();
                 if (totalSize + size > totalSizeCap) {
@@ -112,21 +112,9 @@ public class TimeBasedArchiveRemover extends ContextAwareBase implements Archive
         addInfo("Removed  " + new FileSize(totalRemoved) + " of files");
     }
 
-    private void descendingSortByLastModified(File[] matchingFileArray) {
-        Arrays.sort(matchingFileArray, new Comparator<File>() {
-            @Override
-            public int compare(final File f1, final File f2) {
-                long l1 = f1.lastModified();
-                long l2 = f2.lastModified();
-                if (l1 == l2)
-                    return 0;
-                // descending sort, i.e. newest files first
-                if (l2 < l1)
-                    return -1;
-                else
-                    return 1;
-            }
-        });
+    
+    protected void descendingSort(File[] matchingFileArray, Date date) {
+        // nothing to do in super class
     }
 
     File getParentDir(File file) {
@@ -143,11 +131,16 @@ public class TimeBasedArchiveRemover extends ContextAwareBase implements Archive
             periodsElapsed = Math.min(periodsElapsed, MAX_VALUE_FOR_INACTIVITY_PERIODS);
         } else {
             periodsElapsed = rc.periodBarriersCrossed(lastHeartBeat, nowInMillis);
-            // periodsElapsed of zero is possible for Size and time based policies
+            // periodsElapsed of zero is possible for size and time based policies
         }
         return (int) periodsElapsed;
     }
 
+    /**
+     * Computes whether the fileNamePattern may create sub-folders.
+     * @param fileNamePattern
+     * @return
+     */
     boolean computeParentCleaningFlag(FileNamePattern fileNamePattern) {
         DateTokenConverter<Object> dtc = fileNamePattern.getPrimaryDateTokenConverter();
         // if the date pattern has a /, then we need parent cleaning
@@ -177,7 +170,7 @@ public class TimeBasedArchiveRemover extends ContextAwareBase implements Archive
             p = p.getNext();
         }
 
-        // no /, so we don't need parent cleaning
+        // no '/', so we don't need parent cleaning
         return false;
     }
 

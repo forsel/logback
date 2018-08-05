@@ -55,6 +55,7 @@ import ch.qos.logback.core.spi.FilterAttachableImpl;
 import ch.qos.logback.core.spi.FilterReply;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.spi.LogbackLock;
+import ch.qos.logback.core.spi.SequenceNumberGenerator;
 import ch.qos.logback.core.status.ErrorStatus;
 import ch.qos.logback.core.status.InfoStatus;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
@@ -90,6 +91,8 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
     private final LifeCycleManager lifeCycleManager = new LifeCycleManager();
 
     private long birthTime = System.currentTimeMillis();
+   
+    
     LogbackLock configurationLock = new LogbackLock();
 
     // Attributes from ContextBase:
@@ -107,8 +110,10 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
     boolean quiet;
     boolean started;
     boolean alreadySetLogbackStatusManager = false;
+    private SequenceNumberGenerator sequenceNumberGenerator;
+ 
 
-    private ExecutorService executorService;
+    private ScheduledExecutorService scheduledExecutorService;
 
     public LogbackValve() {
         putObject(CoreConstants.EVALUATOR_MAP, new HashMap<String, EventEvaluator<?>>());
@@ -120,7 +125,7 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
 
     @Override
     public void startInternal() throws LifecycleException {
-        executorService = ExecutorServiceUtil.newExecutorService();
+        scheduledExecutorService = ExecutorServiceUtil.newScheduledExecutorService();
 
         String filename;
 
@@ -256,7 +261,7 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
             getNext().invoke(request, response);
 
             TomcatServerAdapter adapter = new TomcatServerAdapter(request, response);
-            IAccessEvent accessEvent = new AccessEvent(request, response, adapter);
+            IAccessEvent accessEvent = new AccessEvent(this, request, response, adapter);
 
             addThreadName(accessEvent);
 
@@ -286,9 +291,9 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
         started = false;
         setState(LifecycleState.STOPPING);
         lifeCycleManager.reset();
-        if (executorService != null) {
-            ExecutorServiceUtil.shutdown(executorService);
-            executorService = null;
+        if (scheduledExecutorService != null) {
+            ExecutorServiceUtil.shutdown(scheduledExecutorService);
+            scheduledExecutorService = null;
         }
     }
 
@@ -328,7 +333,6 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
         return aai.detachAppender(name);
     }
 
-    @Override
     public String getInfo() {
         return "Logback's implementation of ValveBase";
     }
@@ -390,7 +394,7 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
 
     @Override
     public ExecutorService getExecutorService() {
-        return executorService;
+        return getScheduledExecutorService();
     }
 
     @Override
@@ -449,11 +453,19 @@ public class LogbackValve extends ValveBase implements Lifecycle, Context, Appen
 
     @Override
     public ScheduledExecutorService getScheduledExecutorService() {
-        throw new UnsupportedOperationException();
+        return scheduledExecutorService;
     }
 
     @Override
     public void addScheduledFuture(ScheduledFuture<?> scheduledFuture) {
         throw new UnsupportedOperationException();
+    }
+    
+    public SequenceNumberGenerator getSequenceNumberGenerator() {
+        return sequenceNumberGenerator;
+    }
+
+    public void setSequenceNumberGenerator(SequenceNumberGenerator sequenceNumberGenerator) {
+        this.sequenceNumberGenerator = sequenceNumberGenerator;
     }
 }

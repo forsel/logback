@@ -13,19 +13,22 @@
  */
 package ch.qos.logback.core.joran.event.stax;
 
-import ch.qos.logback.core.Context;
-import ch.qos.logback.core.ContextBase;
-import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.status.StatusChecker;
-import ch.qos.logback.core.status.StatusManager;
-import ch.qos.logback.core.util.CoreTestConstants;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import javax.xml.stream.events.Attribute;
 import java.io.FileInputStream;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import javax.xml.stream.events.Attribute;
+
+import org.junit.Test;
+
+import ch.qos.logback.core.Context;
+import ch.qos.logback.core.ContextBase;
+import ch.qos.logback.core.status.Status;
+import ch.qos.logback.core.testUtil.CoreTestConstants;
+import ch.qos.logback.core.testUtil.StatusChecker;
 
 public class StaxEventRecorderTest {
 
@@ -61,7 +64,6 @@ public class StaxEventRecorderTest {
     @Test
     public void testProcessingOfTextWithEntityCharacters() throws Exception {
         List<StaxEvent> seList = doTest("ampEvent.xml");
-        StatusManager sm = context.getStatusManager();
         assertTrue(statusChecker.getHighestLevel(0) == Status.INFO);
         // dump(seList);
         assertEquals(3, seList.size());
@@ -73,7 +75,6 @@ public class StaxEventRecorderTest {
     @Test
     public void testAttributeProcessing() throws Exception {
         List<StaxEvent> seList = doTest("inc.xml");
-        StatusManager sm = context.getStatusManager();
         assertTrue(statusChecker.getHighestLevel(0) == Status.INFO);
         assertEquals(4, seList.size());
         StartEvent se = (StartEvent) seList.get(1);

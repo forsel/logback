@@ -37,10 +37,10 @@ import ch.qos.logback.core.joran.action.ext.StackAction;
 import ch.qos.logback.core.joran.spi.ElementSelector;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.status.StatusChecker;
+import ch.qos.logback.core.testUtil.CoreTestConstants;
 import ch.qos.logback.core.testUtil.FileTestUtil;
 import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.util.CoreTestConstants;
+import ch.qos.logback.core.testUtil.StatusChecker;
 import ch.qos.logback.core.util.StatusPrinter;
 
 public class IncludeActionTest {
@@ -70,6 +70,8 @@ public class IncludeActionTest {
     static final String SECOND_FILE = INCLUSION_DIR_PREFIX + "second.xml";
 
     static final String TOP_BY_URL = INCLUSION_DIR_PREFIX + "topByUrl.xml";
+
+    static final String TOP_BY_ENTITY = INCLUSION_DIR_PREFIX + "topByEntity.xml";
 
     static final String INCLUDE_BY_RESOURCE = INCLUSION_DIR_PREFIX + "topByResource.xml";
 
@@ -213,11 +215,19 @@ public class IncludeActionTest {
         tc.doConfigure(MULTI_INCLUDE_BY_FILE);
         verifyConfig(new String[] { "IA", "IB", "SECOND" });
     }
-
+    
+    @Test
+    public void includeAsEntity() throws JoranException {
+        tc.doConfigure(TOP_BY_ENTITY);
+        verifyConfig(new String[] { "EA", "EB" });  
+    }
+    
     void verifyConfig(String[] expected) {
         Stack<String> witness = new Stack<String>();
         witness.addAll(Arrays.asList(expected));
         assertEquals(witness, stackAction.getStack());
     }
 
+
+    
 }

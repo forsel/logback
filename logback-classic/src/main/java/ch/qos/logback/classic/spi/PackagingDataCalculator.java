@@ -17,7 +17,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.util.HashMap;
 
-import sun.reflect.Reflection;
+//import sun.reflect.Reflection;
 
 // import java.security.AccessControlException; import java.security.AccessController;import java.security.PrivilegedAction;
 /**
@@ -42,8 +42,8 @@ public class PackagingDataCalculator {
         // sun.reflect.Reflection class. However, this class will *not compile*
         // on JDKs lacking sun.reflect.Reflection.
         try {
-            Reflection.getCallerClass(2);
-            GET_CALLER_CLASS_METHOD_AVAILABLE = true;
+            //Reflection.getCallerClass(2);
+            //GET_CALLER_CLASS_METHOD_AVAILABLE = true;
         } catch (NoClassDefFoundError e) {
         } catch (NoSuchMethodError e) {
         } catch (UnsupportedOperationException e) {
@@ -66,13 +66,14 @@ public class PackagingDataCalculator {
         }
     }
 
+    @SuppressWarnings("unused")
     void populateFrames(StackTraceElementProxy[] stepArray) {
         // in the initial part of this method we populate package information for
         // common stack frames
         final Throwable t = new Throwable("local stack reference");
-        final StackTraceElement[] localteSTEArray = t.getStackTrace();
-        final int commonFrames = STEUtil.findNumberOfCommonFrames(localteSTEArray, stepArray);
-        final int localFirstCommon = localteSTEArray.length - commonFrames;
+        final StackTraceElement[] localSTEArray = t.getStackTrace();
+        final int commonFrames = STEUtil.findNumberOfCommonFrames(localSTEArray, stepArray);
+        final int localFirstCommon = localSTEArray.length - commonFrames;
         final int stepFirstCommon = stepArray.length - commonFrames;
 
         ClassLoader lastExactClassLoader = null;
@@ -80,9 +81,9 @@ public class PackagingDataCalculator {
 
         int missfireCount = 0;
         for (int i = 0; i < commonFrames; i++) {
-            Class callerClass = null;
+            Class<?> callerClass = null;
             if (GET_CALLER_CLASS_METHOD_AVAILABLE) {
-                callerClass = Reflection.getCallerClass(localFirstCommon + i - missfireCount + 1);
+                //callerClass = Reflection.getCallerClass(localFirstCommon + i - missfireCount + 1);
             }
             StackTraceElementProxy step = stepArray[stepFirstCommon + i];
             String stepClassname = step.ste.getClassName();
@@ -113,7 +114,7 @@ public class PackagingDataCalculator {
         }
     }
 
-    private ClassPackagingData calculateByExactType(Class type) {
+    private ClassPackagingData calculateByExactType(Class<?> type) {
         String className = type.getName();
         ClassPackagingData cpd = cache.get(className);
         if (cpd != null) {
@@ -132,7 +133,7 @@ public class PackagingDataCalculator {
         if (cpd != null) {
             return cpd;
         }
-        Class type = bestEffortLoadClass(lastExactClassLoader, className);
+        Class<?> type = bestEffortLoadClass(lastExactClassLoader, className);
         String version = getImplementationVersion(type);
         String codeLocation = getCodeLocation(type);
         cpd = new ClassPackagingData(codeLocation, version, false);
@@ -140,7 +141,7 @@ public class PackagingDataCalculator {
         return cpd;
     }
 
-    String getImplementationVersion(Class type) {
+    String getImplementationVersion(Class<?> type) {
         if (type == null) {
             return "na";
         }
@@ -157,7 +158,7 @@ public class PackagingDataCalculator {
 
     }
 
-    String getCodeLocation(Class type) {
+    String getCodeLocation(Class<?> type) {
         try {
             if (type != null) {
                 // file:/C:/java/maven-2.0.8/repo/com/icegreen/greenmail/1.3/greenmail-1.3.jar
@@ -196,7 +197,7 @@ public class PackagingDataCalculator {
         return (idx != -1 && idx + 1 == text.length());
     }
 
-    private Class loadClass(ClassLoader cl, String className) {
+    private Class<?> loadClass(ClassLoader cl, String className) {
         if (cl == null) {
             return null;
         }
@@ -218,8 +219,8 @@ public class PackagingDataCalculator {
      * @param className
      * @return
      */
-    private Class bestEffortLoadClass(ClassLoader lastGuaranteedClassLoader, String className) {
-        Class result = loadClass(lastGuaranteedClassLoader, className);
+    private Class<?> bestEffortLoadClass(ClassLoader lastGuaranteedClassLoader, String className) {
+        Class<?> result = loadClass(lastGuaranteedClassLoader, className);
         if (result != null) {
             return result;
         }

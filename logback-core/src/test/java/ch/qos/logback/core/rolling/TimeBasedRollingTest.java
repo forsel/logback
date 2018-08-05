@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.core.encoder.EchoEncoder;
+import ch.qos.logback.core.rolling.testUtil.ScaffoldingForRollingTests;
 import ch.qos.logback.core.testUtil.EnvUtilForTests;
 import ch.qos.logback.core.util.StatusPrinter;
 
@@ -29,11 +30,11 @@ import ch.qos.logback.core.util.StatusPrinter;
  * A rather exhaustive set of tests. Tests include leaving the file option
  * blank, or setting it, with and without compression, and tests with or without
  * stopping/restarting the RollingFileAppender.
- * <p/>
+ * <p>
  * The regression tests log a few times using a RollingFileAppender. Then, they
  * predict the names of the files which should be generated and compare them
  * with witness files.
- * <p/>
+ * <p>
  * <pre>
  *                Compression     file option    Stop/Restart
  *     Test1      NO              BLANK           NO
@@ -185,7 +186,7 @@ public class TimeBasedRollingTest extends ScaffoldingForRollingTests {
 
     @Test
     public void noCompression_FileSet_NoRestart_5() throws IOException {
-        defaultTest("test5", "test6", "", FILE_OPTION_SET, NO_RESTART);
+        defaultTest("test5", "test5", "", FILE_OPTION_SET, NO_RESTART);
     }
 
     @Test
@@ -196,12 +197,12 @@ public class TimeBasedRollingTest extends ScaffoldingForRollingTests {
     // LOGBACK-168
     @Test
     public void withMissingTargetDirWithCompression() throws IOException {
-        defaultTest("test7", "%d{yyyy-MM-dd, aux}/", ".gz", FILE_OPTION_SET, NO_RESTART);
+        defaultTest("test7", "%d{yyyy-MM-dd, aux}/test7", ".gz", FILE_OPTION_SET, NO_RESTART);
     }
 
     @Test
     public void withMissingTargetDirWithZipCompression() throws IOException {
-        defaultTest("test8", "%d{yyyy-MM-dd, aux}/", ".zip", FILE_OPTION_SET, NO_RESTART);
+        defaultTest("test8", "%d{yyyy-MM-dd, aux}/test8", ".zip", FILE_OPTION_SET, NO_RESTART);
     }
 
     @Test

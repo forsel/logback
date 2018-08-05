@@ -17,8 +17,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.db.DriverManagerConnectionSource;
 import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.testUtil.RandomUtil;
+import ch.qos.logback.core.testUtil.StatusChecker;
 import ch.qos.logback.core.util.EnvUtil;
 import ch.qos.logback.core.util.StatusPrinter;
 import org.junit.*;
@@ -135,7 +135,6 @@ public class DBAppenderIntegrationTest {
         assertEquals("This is a debug message. Message number: " + (diff + 5), msg);
     }
 
-    @SuppressWarnings("unchecked")
     void verifyProperty(long lastEventId) throws SQLException {
         DriverManagerConnectionSource cs = getConnectionSource();
         Connection con = cs.getConnection();

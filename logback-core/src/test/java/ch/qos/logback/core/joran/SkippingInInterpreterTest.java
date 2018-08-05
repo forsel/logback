@@ -37,7 +37,7 @@ import ch.qos.logback.core.joran.action.ext.TouchAction;
 import ch.qos.logback.core.joran.spi.ActionException;
 import ch.qos.logback.core.status.Status;
 import ch.qos.logback.core.status.StatusManager;
-import ch.qos.logback.core.util.CoreTestConstants;
+import ch.qos.logback.core.testUtil.CoreTestConstants;
 
 /**
  * Test the way Interpreter skips child elements in case of exceptions thrown by
@@ -104,11 +104,11 @@ public class SkippingInInterpreterTest {
 
     @Test
     public void testSkippingRuntimeExInBadEnd() throws Exception {
-        doTest("badEnd1.xml", new Integer(2), IllegalStateException.class);
+        doTest("badEnd1.xml", Integer.valueOf(2), IllegalStateException.class);
     }
 
     @Test
     public void testSkippingActionExInBadEnd() throws Exception {
-        doTest("badEnd2.xml", new Integer(2), ActionException.class);
+        doTest("badEnd2.xml", Integer.valueOf(2), ActionException.class);
     }
 }

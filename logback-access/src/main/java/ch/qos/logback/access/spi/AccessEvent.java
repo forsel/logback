@@ -16,6 +16,8 @@ package ch.qos.logback.access.spi;
 import ch.qos.logback.access.AccessConstants;
 import ch.qos.logback.access.pattern.AccessConverter;
 import ch.qos.logback.access.servlet.Util;
+import ch.qos.logback.core.Context;
+import ch.qos.logback.core.spi.SequenceNumberGenerator;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +45,8 @@ import java.util.Vector;
  * @author S&eacute;bastien Pennec
  */
 public class AccessEvent implements Serializable, IAccessEvent {
+
+    private static final String[] NA_STRING_ARRAY = new String[] { NA };
 
     private static final long serialVersionUID = 866718993618836343L;
 
@@ -83,10 +87,17 @@ public class AccessEvent implements Serializable, IAccessEvent {
      */
     private long timeStamp = 0;
 
-    public AccessEvent(HttpServletRequest httpRequest, HttpServletResponse httpResponse, ServerAdapter adapter) {
+    private long sequenceNumber = 0;
+
+    public AccessEvent(Context context, HttpServletRequest httpRequest, HttpServletResponse httpResponse, ServerAdapter adapter) {
         this.httpRequest = httpRequest;
         this.httpResponse = httpResponse;
         this.timeStamp = System.currentTimeMillis();
+
+        SequenceNumberGenerator sng = context.getSequenceNumberGenerator();
+        if (sng != null) {
+            this.sequenceNumber = sng.nextSequenceNumber();
+        }
         this.serverAdapter = adapter;
         this.elapsedTime = calculateElapsedTime();
     }
@@ -124,6 +135,14 @@ public class AccessEvent implements Serializable, IAccessEvent {
         } else {
             this.timeStamp = timeStamp;
         }
+    }
+
+    public long getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public void setSequenceNumber(long sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
     }
 
     /**
@@ -371,6 +390,11 @@ public class AccessEvent implements Serializable, IAccessEvent {
             return;
         }
 
+        // attributeMap has been copied already. See also LOGBACK-1189
+        if (attributeMap != null) {
+            return;
+        }
+
         attributeMap = new HashMap<String, Object>();
 
         Enumeration<String> names = httpRequest.getAttributeNames();
@@ -400,16 +424,15 @@ public class AccessEvent implements Serializable, IAccessEvent {
 
     @Override
     public String[] getRequestParameter(String key) {
-        if (httpRequest != null) {
-            String[] value = httpRequest.getParameterValues(key);
-            if (value == null) {
-                return new String[] { NA };
-            } else {
-                return value;
-            }
-        } else {
-            return new String[] { NA };
+        String[] value = null;
+
+        if (requestParameterMap != null) {
+            value = requestParameterMap.get(key);
+        } else if (httpRequest != null) {
+            value = httpRequest.getParameterValues(key);
         }
+
+        return (value != null) ? value : NA_STRING_ARRAY;
     }
 
     @Override

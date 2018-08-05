@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
@@ -35,7 +36,7 @@ import ch.qos.logback.classic.net.mock.MockAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEventVO;
-import ch.qos.logback.core.net.server.ServerSocketUtil;
+import ch.qos.logback.core.net.server.test.ServerSocketUtil;
 
 /**
  * A functional test for {@link ServerSocketReceiver}.
@@ -44,6 +45,7 @@ import ch.qos.logback.core.net.server.ServerSocketUtil;
  * network interface, and validate that it receives messages and delivers
  * them to its appender.
  */
+@Ignore
 public class ServerSocketReceiverFunctionalTest {
 
     private static final int EVENT_COUNT = 10;

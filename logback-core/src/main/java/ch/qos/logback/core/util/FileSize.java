@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 /**
  * Instances of this class represent the size of a file. Internally, the size is
- * stored as long.>
+ * stored as long.
  * 
  * <p>The {@link #valueOf} method can convert strings such as "3 kb", "5 mb", into
  * FileSize instances. The recognized unit specifications for file size are the
@@ -91,6 +91,12 @@ public class FileSize {
             return inKB + " KB";
         }
         
-        return inMB + " MB";
+        long inGB = size / GB_COEFFICIENT;
+        if(inGB == 0) {
+            return inMB + " MB";
+        }
+        
+        return inGB + " GB";
+        
     }
 }

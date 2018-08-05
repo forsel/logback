@@ -25,9 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.qos.logback.core.net.mock.MockContext;
+import ch.qos.logback.core.net.server.test.ServerSocketUtil;
 import ch.qos.logback.core.util.ExecutorServiceUtil;
 
 /**
@@ -35,6 +37,7 @@ import ch.qos.logback.core.util.ExecutorServiceUtil;
  *
  * @author Carl Harris
  */
+@Ignore
 public class ServerSocketAppenderBaseFunctionalTest {
 
     private static final String TEST_EVENT = "test event";

@@ -50,8 +50,7 @@ import ch.qos.logback.core.util.OptionHelper;
 /**
  * An abstract class that provides support for sending events to an email
  * address.
- * <p/>
- * <p/>
+ * <p>
  * See http://logback.qos.ch/manual/appenders.html#SMTPAppender for further
  * documentation.
  *
@@ -165,14 +164,12 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
             addError("Both SSL and StartTLS cannot be enabled simultaneously");
         } else {
             if (isSTARTTLS()) {
-                // see also http://jira.qos.ch/browse/LBCORE-225
+                // see also http://jira.qos.ch/browse/LOGBACK-193
                 props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.transport.protocol", "true");
             }
             if (isSSL()) {
-                String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
-                props.put("mail.smtp.socketFactory.port", Integer.toString(smtpPort));
-                props.put("mail.smtp.socketFactory.class", SSL_FACTORY);
-                props.put("mail.smtp.socketFactory.fallback", "true");
+                props.put("mail.smtp.ssl.enable", "true");
             }
         }
 
@@ -206,7 +203,7 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
                 if (asynchronousSending) {
                     // perform actual sending asynchronously
                     SenderRunnable senderRunnable = new SenderRunnable(cbClone, eventObject);
-                    context.getExecutorService().execute(senderRunnable);
+                    context.getScheduledExecutorService().execute(senderRunnable);
                 } else {
                     // synchronous sending
                     sendBuffer(cbClone, eventObject);
@@ -242,8 +239,7 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
 
     /**
      * This method determines if there is a sense in attempting to append.
-     * <p/>
-     * <p/>
+     * <p>
      * It checks whether there is a set output target and also if there is a set
      * layout. If these checks fail, then the boolean value <code>false</code> is
      * returned.
@@ -307,6 +303,12 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
      */
     public List<PatternLayoutBase<E>> getToList() {
         return toPatternLayoutList;
+    }
+
+    /**
+     * Allows extend classes to update mime message (e.g.: Add headers)
+     */
+    protected void updateMimeMsg(MimeMessage mimeMsg, CyclicBuffer<E> cb, E lastEventObject) {
     }
 
     /**
@@ -382,6 +384,9 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
             Multipart mp = new MimeMultipart();
             mp.addBodyPart(part);
             mimeMsg.setContent(mp);
+
+            // Added the feature to update mime message before sending the email
+            updateMimeMsg(mimeMsg, cb, lastEventObject);
 
             mimeMsg.setSentDate(new Date());
             addInfo("About to send out SMTP message \"" + subjectStr + "\" to " + Arrays.toString(toAddressArray));
@@ -497,7 +502,7 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
     /**
      * Set the "mail.smtp.localhost" property to the value passed as parameter to
      * this method.
-     * <p/>
+     * 
      * <p>Useful in case the hostname for the client host is not fully qualified
      * and as a consequence the SMTP server rejects the clients HELO/EHLO command.
      * </p>
@@ -543,7 +548,7 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
         if (to == null || to.length() == 0) {
             throw new IllegalArgumentException("Null or empty <to> property");
         }
-        PatternLayoutBase plb = makeNewToPatternLayout(to.trim());
+        PatternLayoutBase<E> plb = makeNewToPatternLayout(to.trim());
         plb.setContext(context);
         plb.start();
         this.toPatternLayoutList.add(plb);
@@ -553,7 +558,7 @@ public abstract class SMTPAppenderBase<E> extends AppenderBase<E> {
 
     public List<String> getToAsListOfString() {
         List<String> toList = new ArrayList<String>();
-        for (PatternLayoutBase plb : toPatternLayoutList) {
+        for (PatternLayoutBase<E> plb : toPatternLayoutList) {
             toList.add(plb.getPattern());
         }
         return toList;

@@ -16,7 +16,8 @@ package ch.qos.logback.core;
 
 public class CoreConstants {
 
-    final public static String STATUS_LISTENER_CLASS = "logback.statusListenerClass";
+    final public static String DISABLE_SERVLET_CONTAINER_INITIALIZER_KEY = "logbackDisableServletContainerInitializer";
+    final public static String STATUS_LISTENER_CLASS_KEY = "logback.statusListenerClass";
     final public static String SYSOUT = "SYSOUT";
 
     /**
@@ -30,7 +31,7 @@ public class CoreConstants {
     // This causes tests failures in SocketReceiverTest.testDispatchEventForEnabledLevel and
     // ServerSocketReceiverFunctionalTest.testLogEventFromClient.
     // We thus set a pool size > 0 for tests to pass.
-    public static final int SCHEDULED_EXECUTOR_POOL_SIZE = 2;
+    public static final int SCHEDULED_EXECUTOR_POOL_SIZE = 1;
 
     
     /**
@@ -46,6 +47,7 @@ public class CoreConstants {
     public static final int LINE_SEPARATOR_LEN = LINE_SEPARATOR.length();
 
     public static final String CODES_URL = "http://logback.qos.ch/codes.html";
+    public static final String MANUAL_URL_PREFIX = "http://logback.qos.ch/manual/";   
     public static final String MORE_INFO_PREFIX = "For more information, please visit ";
 
     /**
@@ -73,11 +75,11 @@ public class CoreConstants {
     public static final String EVALUATOR_MAP = "EVALUATOR_MAP";
 
     /**
-     * Key used to locate a collision map for FileAppender instances in context's object map.
+     * Key used to locate a map Files used by FileAppender instances in context's object map.
      * 
-     * The collision map consists of enties of the type (appender name, File option) 
+     * Said map consists of entries of the type (appender name, File option) 
      */
-    public static final String FA_FILENAME_COLLISION_MAP = "RFA_FILENAME_COLLISION_MAP";
+    public static final String FA_FILENAME_COLLISION_MAP = "FA_FILENAMES_MAP";
 
     /**
      * Key used to locate a collision map for RollingFileAppender instances in context's object map.
@@ -148,8 +150,8 @@ public class CoreConstants {
     public static final char TAB = '\t';
     public static final char DOLLAR = '$';
 
-    public static final String SEE_FNP_NOT_SET = "See also http://logback.qos.ch/codes.html#tbr_fnp_not_set";
-    public static final String SEE_MISSING_INTEGER_TOKEN = "See also http://logback.qos.ch/codes.html#sat_missing_integer_token";
+    public static final String SEE_FNP_NOT_SET = "See also "+CODES_URL+"#tbr_fnp_not_set";
+    public static final String SEE_MISSING_INTEGER_TOKEN = "See also "+CODES_URL+"#sat_missing_integer_token";
 
     public static final String CONFIGURATION_WATCH_LIST = "CONFIGURATION_WATCH_LIST";
     public static final String CONFIGURATION_WATCH_LIST_RESET_X = "CONFIGURATION_WATCH_LIST_RESET";
@@ -165,6 +167,8 @@ public class CoreConstants {
      * context.
      */
     public static final String HOSTNAME_KEY = "HOSTNAME";
+
+    public static final String UNKNOWN_LOCALHOST = "UNKNOWN_LOCALHOST";
 
     /**
      * The key under which the current context name is registered in the logger
@@ -198,5 +202,6 @@ public class CoreConstants {
     public static final int UNBOUND_HISTORY = 0;
     
     public static final String RECONFIGURE_ON_CHANGE_TASK = "RECONFIGURE_ON_CHANGE_TASK";
+    public static final String SIZE_AND_TIME_BASED_FNATP_IS_DEPRECATED = "SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead";
 
 }

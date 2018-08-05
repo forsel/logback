@@ -18,7 +18,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import ch.qos.logback.core.status.InfoStatus;
 import ch.qos.logback.core.util.FileUtil;
@@ -131,7 +130,7 @@ public class RequestLogImpl extends ContextBase implements RequestLog, AppenderA
     @Override
     public void log(Request jettyRequest, Response jettyResponse) {
         JettyServerAdapter adapter = new JettyServerAdapter(jettyRequest, jettyResponse);
-        IAccessEvent accessEvent = new AccessEvent(jettyRequest, jettyResponse, adapter);
+        IAccessEvent accessEvent = new AccessEvent(this, jettyRequest, jettyResponse, adapter);
         if (getFilterChainDecision(accessEvent) == FilterReply.DENY) {
             return;
         }

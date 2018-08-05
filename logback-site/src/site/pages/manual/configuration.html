@@ -81,19 +81,20 @@
     </p>
 
     <ol>
+
       <li>
         <p>Logback tries to find a file called
+        <em>logback-test.xml</em> <a
+        href="../faq.html#configFileLocation">in the
+        classpath</a>.</p> </li>
+
+      <li>
+        <p>If no such file is found, logback tries to find a file called
         <em>logback.groovy</em> <a
         href="../faq.html#configFileLocation">in the
         classpath</a>.</p>
       </li>
 
-      <li>
-        <p>If no such file is found, logback tries to find a file
-        called <em>logback-test.xml</em> <a
-        href="../faq.html#configFileLocation">in the
-        classpath</a>.</p>
-      </li>
 
       <li><p>If no such file is found, it checks for the file
       <em>logback.xml</em>  <a
@@ -160,7 +161,7 @@
     <code>BasicConfigurator</code> usage <a
     href="../xref/chapters/configuration/MyApp1.html">(logback-examples/src/main/java/chapters/configuration/MyApp1.java)</a></p>
 
-    <pre class="prettyprint source">package manual.configuration;
+    <pre class="prettyprint source">package chapters.configuration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -455,7 +456,22 @@ public static void main(String[] args) {
    registering a status listener</a> may help debugging issues
    locating the configuration file.</p>
 
+   <p>Given that <code>"logback.configurationFile"</code> is a Java
+   system property, it may be set within your application as
+   well. However, the system property must be set before any logger
+   instance is created.</p>
 
+   <pre class="prettyprint lang-java source">import ch.qos.logback.classic.util.ContextInitializer;
+
+public class ServerMain {
+    public static void main(String args[]) throws IOException, InterruptedException {
+       // must be set before the first call to  LoggerFactory.getLogger();
+       // ContextInitializer.CONFIG_FILE_PROPERTY is set to "logback.configurationFile"
+       System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, /path/to/config.xml);
+       ...
+    }   
+}</pre>
+   
    <h3 class="doAnchor" name="autoScan">Automatically reloading
    configuration file upon modification</h3>
 
@@ -505,42 +521,20 @@ public static void main(String[] args) {
    do not forget to specify a time unit.
    </p>
 
-   <p>Behind the scenes, when you set the scan attribute to true, a
-   <code>TurboFilter</code> called <a
-   href="../xref/ch/qos/logback/classic/turbo/ReconfigureOnChangeFilter.html">ReconfigureOnChangeFilter</a>
-   will be installed. TurboFilters are described in a <a
-   href="filters.html#TurboFilter">later chapter</a>. As a
-   consequence, scanning is done "in-thread", that is any time a
-   printing method of logger is invoked. For example, for a logger
-   named <code>myLogger</code>, when you write
-   "myLogger.debug("hello");", and if the scan attribute is set to
-   true, then <code>ReconfigureOnChangeFilter</code> will be
-   invoked. Moreover, the said filter will be invoked even if
-   <code>myLogger</code> is disabled for the DEBUG level.
-   </p>
+   <p>Behind the scenes, when you set the <span
+   class="option">scan</span> attribute to <code>true</code>, a <a
+   href="../xref/ch/qos/logback/classic/joran/ReconfigureOnChangeTask.html"><code>ReconfigureOnChangeTask</code></a>
+   will be installed. This task run in a separate thread and will
+   check whether your configuration file has
+   changed. <code>ReconfigureOnChangeTask</code> will automatically
+   watch for any <a href="#fileInclusion">included</a> files as
+   well.</p>
 
-   <p class="highlight">When a configuration file changes, it will be
-   automatically reloaded but only after several logger invocations
-   and after a delay determined by the scanning period.
-   </p>
+   <p>As it is easy to make errors while editing a configuration file,
+   in case the latest version of the configuration file has XML syntax
+   errors, it will fall back to a previous configuration file free of
+   XML syntax errors.</p>
 
-   <p>Given that <code>ReconfigureOnChangeFilter</code> is invoked
-   every time <em>any</em> logger is invoked, regardless of logger
-   level, <code>ReconfigureOnChangeFilter</code> is absolutely
-   performance critical. So much so that in fact, the check whether
-   the scan period has elapsed or not, is too costly in itself. In
-   order to improve performance,
-   <code>ReconfigureOnChangeFilter</code> is in reality "alive" only
-   once every <em>N</em> logging operations.  Depending on how often
-   your application logs, the value of <em>N</em> can be modified on
-   the fly by logback. By default N is 16, although it can go as high
-   as 2^16 (=&nbsp;65536) for CPU-intensive applications.
-   </p>
-   
-   <p>In short, when a configuration file changes, it will be
-   automatically reloaded but only after several logger invocations
-   <em>and</em> after a delay determined by the scanning period.
-   </p>
 
    
    <h4 class="doAnchor" name="packagingData">Enabling packaging data in stack traces</h4>
@@ -778,14 +772,14 @@ public class MyApp3 {
    <p class="source">java <b>-Dlogback.statusListenerClass</b>=ch.qos.logback.core.status.NopStatusListener&nbsp;...</p>
 
 
-   <h3 class="doAnchor" name="stopContext">Stopping
-   logback-classic</h3>
+   <h2 class="doAnchor" name="stopContext">Stopping
+   logback-classic</h2>
 
    <p>In order to release the resources used by logback-classic, it is
    always a good idea to stop the logback context. Stopping the
    context will close all appenders attached to loggers defined by the
-   context and stop any active threads.
-   </p>
+   context and stop any active threads in an orderly way. Please also
+   read the section on "shutdown hooks" just below.</p>
 
 <pre class="prettyprint lang-java source">
 import org.sflf4j.LoggerFactory;
@@ -800,31 +794,85 @@ import ch.qos.logback.classic.LoggerContext;
    the <a
    href="http://docs.oracle.com/javaee/6/api/javax/servlet/ServletContextListener.html#contextDestroyed(javax.servlet.ServletContextEvent)">contextDestroyed</a>
    method of <code>ServletContextListener</code> in order to stop
-   logback-classic and release resources.
+   logback-classic and release resources. Starting with version
+   1.1.10, the appropriate <code>ServletContextListener</code> is
+   installed automatically for you (<a href="#webShutdownHook">see just below</a>).
    </p>
 
    <h4 class="doAnchor" name="shutdownHook">Stopping logback-classic 
    via a shutdown hook</h4>
    
    <p>Installing a JVM shutdown hook is a convenient way for shutting
-   down logback and releasing associated resources.
+   down logback and releasing associated resources. 
    </p>
 
 
    <pre class="prettyprint source">&lt;configuration debug="true">
    &lt;!-- in the absence of the class attribute, assume 
-   ch.qos.logback.core.hook.DelayingShutdownHook --&gt;
+   ch.qos.logback.core.hook.DefaultShutdownHook --&gt;
    <b>&lt;shutdownHook/></b>
   .... 
 &lt;/configuration></pre>
-   
+
+   <p>Note that you may install a shutdown hook of your own making by
+   setting the <span class="attr">class</span> attribute to correspond
+   to your shutdown hook's class name.</p>
+  
    <p>The default shutdown hook, namely <a
-   href="../apidocs/ch/qos/logback/core/hook/DelayingShutdownHook.html">DelayingShutdownHook</a>,
-   can delay shutdown by a user specified duration. Note that you may
-   install a shutdown hook of your own making by setting the <span
-   class="attr">class</span> attribute to correspond to your shutdown
-   hook's class name.</p>.
+   href="../apidocs/ch/qos/logback/core/hook/DefaultShutdownHook.html">DefaultShutdownHook</a>,
+   will <b>stop</b> the logback context after a specified delay (0 by
+   default). Stopping the context will allow up to 30 seconds for any
+   log file compression tasks running in the background to finish. In
+   standalone Java applications, adding a
+   <code>&lt;shutdownHook/></code> directive to your configuration
+   file is an easy way to ensure that any ongoing compression tasks
+   are allowed to finish before JVM exit. In applications within a Web
+   server, <a href="#webShutdownHook">webShutdownHook</a> will be
+   installed automatically making <code>&lt;shutdownHook/></code>
+   directive quite redundant and unnecessary. </p>
+
+
+ 
+    <h4 class="doAnchor" name="webShutdownHook">WebShutdownHook or stopping logback-classic 
+   in web-applications</h4>
+  
+   <p><span class="label">since 1.1.10</span> Logback-classic will
+   <b>automatically</b> ask the web-server to install a <code><a
+   href="../apidocs/ch/qos/logback/classic/servlet/LogbackServletContainerInitializer.html">LogbackServletContainerInitializer</a></code>
+   implementing the <code>ServletContainerInitializer</code> interface
+   (available in servlet-api 3.x and later). This initializer will in
+   turn install and instance of <code><a
+   href="../apidocs/ch/qos/logback/classic/servlet/LogbackServletContextListener.html">LogbackServletContextListener</a></code>.
+   This listener will stop the current logback-classic context when
+   the web-app is stopped or reloaded.
+   </p>
+
+   <p>You may disable the automatic the installation of
+   <code>LogbackServletContextListener</code> by setting a
+   &lt;context-param> named
+   <code>logbackDisableServletContainerInitializer</code> in your
+   web-application's web.xml file. Here is the relevant snippet.</p>
+
    
+<pre class="prettyprint source">&lt;web-app>
+    &lt;context-param>
+        &lt;param-name>logbackDisableServletContainerInitializer&lt;/param-name>
+        &lt;param-value>true&lt;/param-value>
+    &lt;/context-param>
+    .... 
+&lt;/web-app></pre>
+
+    <p>Note that
+    <code>logbackDisableServletContainerInitializer</code> variable
+    can also be set as a Java system property an OS environment
+    variable. The most local setting has priority, i.e. web-app first,
+    system property second and OS environment last.</p>
+
+   
+
+   <!-- =================================================================== -->
+   <!-- =================================================================== -->
+
    <h2 class="doAnchor" name="syntax">Configuration file syntax</h2>
 
    <p>As you have seen thus far in the manual with plenty of examples
@@ -1448,10 +1496,11 @@ import ch.qos.logback.classic.LoggerContext;
   </p>
 
   <p>As in many scripting languages, logback configuration files
-  support definition and substitution of variables. Variables can be
+  support definition and substitution of variables. Variables have a
+  <a href="#scopes">scope</a> (see below). Moreover, variables can be
   defined within the configuration file itself, in an external file,
   in an external resource or even computed and <a
-  href="#definingPropsOnTheFly">defined on the fly</a>. 
+  href="#definingPropsOnTheFly">defined on the fly</a>.
   </p>
 
   <p class="highlight">Variable substitution can occur at any point in
@@ -1466,10 +1515,15 @@ import ch.qos.logback.classic.LoggerContext;
   value held by the <em>aName</em> property.
   </p>
 
-  <p>Variables have a <a href="#scopes">scope</a> (see below).</p>
+  
 
   <p>As they often come in handy, the HOSTNAME and CONTEXT_NAME
-  variables are automatically defined and have context scope.</p>
+  variables are automatically defined and have context scope. Given
+  that in some environments it may take some time to compute the
+  hostname, its value is computed lazily (only when needed). Moreover,
+  HOSTNAME can be set from within the <a
+  href="#definingProps">configuration directly.</a>
+  </p>
 
    <h4 class="doAnchor" name="definingProps">Defining variables</h4>
 
@@ -1814,6 +1868,16 @@ fileName=myApp.log
       <th>Implementation name</th>
       <th>Description</th>
     </tr>
+
+    <tr>
+      <td><a
+      href="../apidocs/ch/qos/logback/core/property/CanonicalHostNamePropertyDefiner.html"><code>CanonicalHostNamePropertyDefiner</code></a>
+      </td>
+      <td>Set the named variable to the canonical host name of the
+      local host. Note that obtaining the canonical host name may take several seconds.
+      </td>
+    </tr>
+    <tr>
 
     <tr>
       <td><a

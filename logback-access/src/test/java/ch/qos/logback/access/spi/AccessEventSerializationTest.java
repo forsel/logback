@@ -13,16 +13,21 @@
  */
 package ch.qos.logback.access.spi;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+import org.junit.Test;
+
 import ch.qos.logback.access.dummy.DummyAccessEventBuilder;
 import ch.qos.logback.access.dummy.DummyRequest;
 import ch.qos.logback.access.dummy.DummyResponse;
 import ch.qos.logback.access.dummy.DummyServerAdapter;
-import org.junit.Test;
-
-import java.io.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import ch.qos.logback.access.net.HardenedAccessEventInputStream;
 
 public class AccessEventSerializationTest {
 
@@ -36,9 +41,11 @@ public class AccessEventSerializationTest {
         oos.flush();
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        ObjectInputStream ois = new ObjectInputStream(bais);
+        HardenedAccessEventInputStream hardenedOIS = new HardenedAccessEventInputStream(bais);
 
-        return ois.readObject();
+        Object sae = hardenedOIS.readObject();
+        hardenedOIS.close();
+        return sae;
     }
 
     @Test
@@ -70,8 +77,9 @@ public class AccessEventSerializationTest {
         DummyRequest request = new DummyRequest();
         DummyResponse response = new DummyResponse();
         DummyServerAdapter adapter = new DummyServerAdapter(request, response);
-
-        IAccessEvent event = new AccessEvent(request, response, adapter);
+        AccessContext accessContext = new AccessContext();
+        
+        IAccessEvent event = new AccessEvent(accessContext, request, response, adapter);
 
         request.setAttribute("testKey", "ORIGINAL");
 

@@ -13,8 +13,8 @@
  */
 package ch.qos.logback.core.rolling;
 
-import static ch.qos.logback.core.util.CoreTestConstants.FAILURE_EXIT_CODE;
-import static ch.qos.logback.core.util.CoreTestConstants.SUCCESSFUL_EXIT_CODE;
+import static ch.qos.logback.core.testUtil.CoreTestConstants.FAILURE_EXIT_CODE;
+import static ch.qos.logback.core.testUtil.CoreTestConstants.SUCCESSFUL_EXIT_CODE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -24,6 +24,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import ch.qos.logback.core.testUtil.CoreTestConstants;
 import ch.qos.logback.core.testUtil.EnvUtilForTests;
 
 import org.junit.After;
@@ -36,9 +37,8 @@ import ch.qos.logback.core.contention.MultiThreadedHarness;
 import ch.qos.logback.core.contention.RunnableWithCounterAndDone;
 import ch.qos.logback.core.encoder.EchoEncoder;
 import ch.qos.logback.core.encoder.Encoder;
-import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.testUtil.RandomUtil;
-import ch.qos.logback.core.util.CoreTestConstants;
+import ch.qos.logback.core.testUtil.StatusChecker;
 import ch.qos.logback.core.util.FileSize;
 import ch.qos.logback.core.util.StatusPrinter;
 
@@ -94,7 +94,7 @@ public class MultiThreadedRollingTest {
 
     public void setUpTimeBasedTriggeringPolicy(RollingFileAppender<Object> rfa) {
         String datePattern = "yyyy-MM-dd'T'HH_mm_ss_SSS";
-        TimeBasedRollingPolicy tbrp = new TimeBasedRollingPolicy();
+        TimeBasedRollingPolicy<Object> tbrp = new TimeBasedRollingPolicy<>();
         tbrp.setFileNamePattern(outputDirStr + "test-%d{" + datePattern + "}");
         tbrp.setContext(context);
         tbrp.setParent(rfa);
@@ -105,7 +105,7 @@ public class MultiThreadedRollingTest {
     }
 
     public void setUpSizeBasedTriggeringPolicy(RollingFileAppender<Object> rfa) {
-        SizeBasedTriggeringPolicy<Object> zbtp = new SizeBasedTriggeringPolicy<Object>();
+        SizeBasedTriggeringPolicy<Object> zbtp = new SizeBasedTriggeringPolicy<>();
         zbtp.setContext(context);
         zbtp.setMaxFileSize(FileSize.valueOf("100KB"));
 

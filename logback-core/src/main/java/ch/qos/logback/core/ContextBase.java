@@ -15,6 +15,7 @@ package ch.qos.logback.core;
 
 import static ch.qos.logback.core.CoreConstants.CONTEXT_NAME_KEY;
 import static ch.qos.logback.core.CoreConstants.FA_FILENAME_COLLISION_MAP;
+import static ch.qos.logback.core.CoreConstants.HOSTNAME_KEY;
 import static ch.qos.logback.core.CoreConstants.RFA_FILENAME_PATTERN_COLLISION_MAP;
 
 import java.util.ArrayList;
@@ -25,10 +26,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
+import ch.qos.logback.core.rolling.helper.FileNamePattern;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.spi.LogbackLock;
+import ch.qos.logback.core.spi.SequenceNumberGenerator;
 import ch.qos.logback.core.status.StatusManager;
 import ch.qos.logback.core.util.ExecutorServiceUtil;
+import ch.qos.logback.core.util.NetworkAddressUtil;
 
 public class ContextBase implements Context, LifeCycle {
 
@@ -44,10 +48,12 @@ public class ContextBase implements Context, LifeCycle {
 
     LogbackLock configurationLock = new LogbackLock();
 
-    private ExecutorService executorService;
     private ScheduledExecutorService scheduledExecutorService;
     protected List<ScheduledFuture<?>> scheduledFutures = new ArrayList<ScheduledFuture<?>>(1);
     private LifeCycleManager lifeCycleManager;
+    private SequenceNumberGenerator sequenceNumberGenerator;
+  
+
     private boolean started;
 
     public ContextBase() {
@@ -62,7 +68,7 @@ public class ContextBase implements Context, LifeCycle {
      * Set the {@link StatusManager} for this context. Note that by default this
      * context is initialized with a {@link BasicStatusManager}. A null value for
      * the 'statusManager' argument is not allowed.
-     * <p/>
+     * 
      * <p> A malicious attacker can set the status manager to a dummy instance,
      * disabling internal error reporting.
      *
@@ -81,12 +87,16 @@ public class ContextBase implements Context, LifeCycle {
     }
 
     public void putProperty(String key, String val) {
-        this.propertyMap.put(key, val);
+        if (HOSTNAME_KEY.equalsIgnoreCase(key)) {
+            putHostnameProperty(val);
+        } else {
+            this.propertyMap.put(key, val);
+        }
     }
 
     protected void initCollisionMaps() {
         putObject(FA_FILENAME_COLLISION_MAP, new HashMap<String, String>());
-        putObject(RFA_FILENAME_PATTERN_COLLISION_MAP, new HashMap<String, String>());
+        putObject(RFA_FILENAME_PATTERN_COLLISION_MAP, new HashMap<String, FileNamePattern>());
     }
 
     /**
@@ -99,8 +109,29 @@ public class ContextBase implements Context, LifeCycle {
     public String getProperty(String key) {
         if (CONTEXT_NAME_KEY.equals(key))
             return getName();
+        if (HOSTNAME_KEY.equalsIgnoreCase(key)) {
+            return lazyGetHostname();
+        }
 
         return (String) this.propertyMap.get(key);
+    }
+
+    private String lazyGetHostname() {
+        String hostname = (String) this.propertyMap.get(HOSTNAME_KEY);
+        if (hostname == null) {
+            hostname = new NetworkAddressUtil(this).safelyGetLocalHostName();
+            putHostnameProperty(hostname);
+        }
+        return hostname;
+    }
+
+    private void putHostnameProperty(String hostname) {
+        String existingHostname = (String) this.propertyMap.get(HOSTNAME_KEY);
+        if (existingHostname == null) {
+            this.propertyMap.put(CoreConstants.HOSTNAME_KEY, hostname);
+        } else {
+
+        }
     }
 
     public Object getObject(String key) {
@@ -129,8 +160,8 @@ public class ContextBase implements Context, LifeCycle {
     public void stop() {
         // We don't check "started" here, because the executor service uses
         // lazy initialization, rather than being created in the start method
-        stopExecutorServices();
-        
+        stopExecutorService();
+
         started = false;
     }
 
@@ -139,11 +170,11 @@ public class ContextBase implements Context, LifeCycle {
     }
 
     /**
-     * Clear the internal objectMap and all properties. Removes registered
-     * shutdown hook
+     * Clear the internal objectMap and all properties. Removes any registered
+     * shutdown hook.
      */
     public void reset() {
-        
+
         removeShutdownHook();
         getLifeCycleManager().reset();
         propertyMap.clear();
@@ -192,11 +223,7 @@ public class ContextBase implements Context, LifeCycle {
         return scheduledExecutorService;
     }
 
-    private synchronized void stopExecutorServices() {
-        if (executorService != null) {
-            ExecutorServiceUtil.shutdown(executorService);
-            executorService = null;
-        }
+    private synchronized void stopExecutorService() {
         if (scheduledExecutorService != null) {
             ExecutorServiceUtil.shutdown(scheduledExecutorService);
             scheduledExecutorService = null;
@@ -253,6 +280,12 @@ public class ContextBase implements Context, LifeCycle {
         return new ArrayList<ScheduledFuture<?>>(scheduledFutures);
     }
     
-    
+    public SequenceNumberGenerator getSequenceNumberGenerator() {
+        return sequenceNumberGenerator;
+    }
+
+    public void setSequenceNumberGenerator(SequenceNumberGenerator sequenceNumberGenerator) {
+        this.sequenceNumberGenerator = sequenceNumberGenerator;
+    }
 
 }

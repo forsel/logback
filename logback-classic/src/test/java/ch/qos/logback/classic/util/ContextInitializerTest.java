@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import ch.qos.logback.classic.ClassicConstants;
 import ch.qos.logback.classic.ClassicTestConstants;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -44,7 +45,7 @@ import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.LogbackException;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.status.StatusListener;
-import ch.qos.logback.core.status.TrivialStatusListener;
+import ch.qos.logback.core.testUtil.TrivialStatusListener;
 import ch.qos.logback.core.util.Loader;
 
 public class ContextInitializerTest {
@@ -58,8 +59,8 @@ public class ContextInitializerTest {
 
     @After
     public void tearDown() throws Exception {
-        System.clearProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
-        System.clearProperty(CoreConstants.STATUS_LISTENER_CLASS);
+        System.clearProperty(ClassicConstants.CONFIG_FILE_PROPERTY);
+        System.clearProperty(CoreConstants.STATUS_LISTENER_CLASS_KEY);
         MockConfigurator.context = null;
     }
 
@@ -92,7 +93,7 @@ public class ContextInitializerTest {
 
     public void doAutoConfigFromSystemProperties(String val) throws JoranException {
         // lc.reset();
-        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, val);
+        System.setProperty(ClassicConstants.CONFIG_FILE_PROPERTY, val);
         new ContextInitializer(loggerContext).autoConfig();
         Appender<ILoggingEvent> appender = root.getAppender("AUTO_BY_SYSTEM_PROPERTY");
         assertNotNull(appender);
@@ -119,7 +120,7 @@ public class ContextInitializerTest {
 
     @Test
     public void autoStatusListener() throws JoranException {
-        System.setProperty(CoreConstants.STATUS_LISTENER_CLASS, TrivialStatusListener.class.getName());
+        System.setProperty(CoreConstants.STATUS_LISTENER_CLASS_KEY, TrivialStatusListener.class.getName());
         List<StatusListener> statusListenerList = loggerContext.getStatusManager().getCopyOfStatusListenerList();
         assertEquals(0, statusListenerList.size());
         doAutoConfigFromSystemProperties(ClassicTestConstants.INPUT_PREFIX + "autoConfig.xml");
@@ -132,7 +133,7 @@ public class ContextInitializerTest {
 
     @Test
     public void autoOnConsoleStatusListener() throws JoranException {
-        System.setProperty(CoreConstants.STATUS_LISTENER_CLASS, CoreConstants.SYSOUT);
+        System.setProperty(CoreConstants.STATUS_LISTENER_CLASS_KEY, CoreConstants.SYSOUT);
         List<StatusListener> sll = loggerContext.getStatusManager().getCopyOfStatusListenerList();
         assertEquals(0, sll.size());
         doAutoConfigFromSystemProperties(ClassicTestConstants.INPUT_PREFIX + "autoConfig.xml");
@@ -152,17 +153,17 @@ public class ContextInitializerTest {
         assertNotNull(loggerContext.getObject(CoreConstants.SAFE_JORAN_CONFIGURATION));
     }
 
-    @Test
-    public void shouldConfigureFromGroovyScript() throws MalformedURLException, JoranException {
-        LoggerContext loggerContext = new LoggerContext();
-        ContextInitializer initializer = new ContextInitializer(loggerContext);
-        assertNull(loggerContext.getObject(CoreConstants.CONFIGURATION_WATCH_LIST));
-
-        URL configurationFileUrl = Loader.getResource("test.groovy", Thread.currentThread().getContextClassLoader());
-        initializer.configureByResource(configurationFileUrl);
-
-        assertNotNull(loggerContext.getObject(CoreConstants.CONFIGURATION_WATCH_LIST));
-    }
+//    @Test
+//    public void shouldConfigureFromGroovyScript() throws MalformedURLException, JoranException {
+//        LoggerContext loggerContext = new LoggerContext();
+//        ContextInitializer initializer = new ContextInitializer(loggerContext);
+//        assertNull(loggerContext.getObject(CoreConstants.CONFIGURATION_WATCH_LIST));
+//
+//        URL configurationFileUrl = Loader.getResource("test.groovy", Thread.currentThread().getContextClassLoader());
+//        initializer.configureByResource(configurationFileUrl);
+//
+//        assertNotNull(loggerContext.getObject(CoreConstants.CONFIGURATION_WATCH_LIST));
+//    }
 
     @Test
     public void shouldThrowExceptionIfUnexpectedConfigurationFileExtension() throws JoranException {

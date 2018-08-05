@@ -20,8 +20,8 @@ import java.net.URL;
 import java.util.Set;
 
 import ch.qos.logback.classic.BasicConfigurator;
+import ch.qos.logback.classic.ClassicConstants;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.gaffer.GafferUtil;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.core.LogbackException;
@@ -47,7 +47,10 @@ public class ContextInitializer {
     final public static String GROOVY_AUTOCONFIG_FILE = "logback.groovy";
     final public static String AUTOCONFIG_FILE = "logback.xml";
     final public static String TEST_AUTOCONFIG_FILE = "logback-test.xml";
-    final public static String CONFIG_FILE_PROPERTY = "logback.configurationFile";
+    /**
+     * @deprecated Please use ClassicConstants.CONFIG_FILE_PROPERTY instead
+     */
+    final public static String CONFIG_FILE_PROPERTY = ClassicConstants.CONFIG_FILE_PROPERTY;
 
     final LoggerContext loggerContext;
 
@@ -64,7 +67,11 @@ public class ContextInitializer {
             if (EnvUtil.isGroovyAvailable()) {
                 // avoid directly referring to GafferConfigurator so as to avoid
                 // loading groovy.lang.GroovyObject . See also http://jira.qos.ch/browse/LBCLASSIC-214
-                GafferUtil.runGafferConfiguratorOn(loggerContext, this, url);
+                //GafferUtil.runGafferConfiguratorOn(loggerContext, this, url);
+
+                StatusManager sm = loggerContext.getStatusManager();
+                sm.add(new ErrorStatus("Groovy configuration disabled due to Java 9 compilation issues.", loggerContext));
+                
             } else {
                 StatusManager sm = loggerContext.getStatusManager();
                 sm.add(new ErrorStatus("Groovy classes are not available on the class path. ABORTING INITIALIZATION.", loggerContext));
@@ -122,12 +129,12 @@ public class ContextInitializer {
             return url;
         }
 
-        url = getResource(GROOVY_AUTOCONFIG_FILE, myClassLoader, updateStatus);
+        url = getResource(TEST_AUTOCONFIG_FILE, myClassLoader, updateStatus);
         if (url != null) {
             return url;
         }
 
-        url = getResource(TEST_AUTOCONFIG_FILE, myClassLoader, updateStatus);
+        url = getResource(GROOVY_AUTOCONFIG_FILE, myClassLoader, updateStatus);
         if (url != null) {
             return url;
         }

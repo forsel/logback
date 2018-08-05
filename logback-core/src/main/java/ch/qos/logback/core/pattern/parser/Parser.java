@@ -51,7 +51,7 @@ public class Parser<E> extends ContextAwareBase {
         DEFAULT_COMPOSITE_CONVERTER_MAP.put(REPLACE_CONVERTER_WORD, ReplacingCompositeConverter.class.getName());
     }
 
-    final List tokenList;
+    final List<Token> tokenList;
     int pointer = 0;
 
     Parser(TokenStream ts) throws ScanException {
@@ -78,9 +78,8 @@ public class Parser<E> extends ContextAwareBase {
      * @param top
      * @param converterMap
      * @return
-     * @throws ScanException
      */
-    public Converter<E> compile(final Node top, Map converterMap) {
+    public Converter<E> compile(final Node top, Map<String, String> converterMap) {
         Compiler<E> compiler = new Compiler<E>(top, converterMap);
         compiler.setContext(context);
         // compiler.setStatusManager(statusManager);
@@ -174,7 +173,7 @@ public class Parser<E> extends ContextAwareBase {
 
         Token ot = getCurentToken();
         if (ot != null && ot.getType() == Token.OPTION) {
-            List<String> optionList = (List<String>) ot.getValue();
+            List<String> optionList = ot.getOptionsList();
             keywordNode.setOptions(optionList);
             advanceTokenPointer();
         }
@@ -197,7 +196,7 @@ public class Parser<E> extends ContextAwareBase {
         }
         Token ot = getCurentToken();
         if (ot != null && ot.getType() == Token.OPTION) {
-            List<String> optionList = (List<String>) ot.getValue();
+            List<String> optionList = ot.getOptionsList();
             compositeNode.setOptions(optionList);
             advanceTokenPointer();
         }
